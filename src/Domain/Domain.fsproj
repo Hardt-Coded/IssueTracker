@@ -5,6 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="Result.fs" />
     <Compile Include="Common.Types.fs" />
     <Compile Include="User.fs" />
   </ItemGroup>
