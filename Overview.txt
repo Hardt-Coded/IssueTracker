@@ -1,0 +1,74 @@
+Project: Issue Tracker 
+
+
+Entities:
+
+User
+	Group
+
+	
+Project
+	Issue
+		Attachment
+		Comment
+		
+		
+
+Entities Detail:
+	
+	User
+		Some sort of id
+		name or email adress
+		password stuff
+		multiple "userGroups"
+		
+	UserGroup
+		GroupName :	Something like Admin and User. 
+					Maybe for the first time hardcoded 
+		
+		
+	Project
+		Title and Description
+		"Issues"
+		
+	Issue
+		Title and Description
+		Current State: New, Active, Done, OnHold, Removed
+		Created User and TimeStamp
+		Assign to "User"
+		Report to "Users" ? Maybe not in the first iteration
+		Watcher to "Users" ? Maybe not in the first iteration
+		"Comments"
+		"Attachments"
+		
+	Comment
+		Text
+		User
+		Attachments - For Images maybe - but not in the first iteration 
+		
+
+User Commands:
+
+	CreateNewUser
+	DeleteUser
+	ChangePassword
+	AddUserGroup
+	RemoveUserGroup
+	
+USerGroup Commands:
+
+	Nothing currently
+	
+	
+Project Commands:
+
+	CreateNewProject
+	SetTitle
+	SetDescription
+	DisableProject
+	EnableProject
+	DeleteProject
+	
+
+		
+		
