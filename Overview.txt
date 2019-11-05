@@ -49,7 +49,7 @@ Entities Detail:
 
 User Commands:
 
-	CreateNewUser
+	CreateUser
 	DeleteUser
 	ChangePassword
 	AddUserGroup
