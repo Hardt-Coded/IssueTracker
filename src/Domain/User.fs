@@ -2,11 +2,23 @@
 
 
 //open Result
-open Common.Types
+open Types.Common
+open Types.User
 open System
+open Common
 
 module User =
-    
+
+
+    type State = {
+        UserId:UserId
+        Name:NotEmptyString
+        EMail:EMail
+        PasswordHash:PasswordHash
+        Groups: NotEmptyString list
+    }
+
+
     module CommandArguments =
 
         type CreateUser = {
@@ -47,62 +59,6 @@ module User =
         | ChangePassword of CommandArguments.ChangePassword
         | AddToGroup of CommandArguments.AddToGroup
         | RemoveFromGroup of CommandArguments.RemoveFromGroup
-
-
-    [<AutoOpen>]
-    module Types =
-
-        open System
-
-        type UserId = private UserId of string
-
-        type HashPair = {
-            Hash:string
-            Salt:string
-        }
-
-        type PasswordHash = private PasswordHash of HashPair
-
-        module UserId =
-            
-            let create userId =
-                if String.IsNullOrWhiteSpace(userId) then
-                    sprintf "user id must not be empty" |> Error
-                else
-                    UserId userId |> Ok
-
-
-            let value (UserId userId) = userId
-
-
-        module PasswordHash =
-            
-            open System;
-            open System.Security.Cryptography
-            open Microsoft.AspNetCore.Cryptography.KeyDerivation
-
-            let create password =
-                if String.IsNullOrEmpty(password) then
-                    "password must not be empty" |> Error
-                else
-                    let salt = Array.zeroCreate 16
-                    use rng = RandomNumberGenerator.Create()
-                    rng.GetBytes(salt)
-                    let saltString = Convert.ToBase64String(salt)
-                    let hashed = 
-                        KeyDerivation.Pbkdf2(
-                            password = password,
-                            salt = salt,
-                            prf = KeyDerivationPrf.HMACSHA1,
-                            iterationCount = 10000,
-                            numBytesRequested = 256 / 8
-                        )
-                    let hashedString = Convert.ToBase64String(hashed)
-                    PasswordHash { Hash = hashedString; Salt = saltString } |> Ok
-
-                
-
-            let value (PasswordHash hashpair) = hashpair
 
 
     module EventArguments =
@@ -148,59 +104,134 @@ module User =
         | RemovedFromGroup of EventArguments.RemovedFromGroup
 
 
-    type State = {
-        UserId:UserId
-        Name:NotEmptyString
-        EMail:EMail
-        PasswordHash:PasswordHash
-        Groups: NotEmptyString list
-    }
-
-
-    let handle (state:State option) command : Result<Event list,string> =
+    let rec private handle (state:State option) command : Result<Event list,string> =
         match state,command with
         | None, CreateUser args ->
-                result {
-                    let! name = NotEmptyString.create "Name" args.Name
-                    let! email = EMail.create args.EMail
-                    let! passwordHash = PasswordHash.create args.Password
-                    let! userId = UserId.create <| Guid.NewGuid().ToString("N")
-                    let userCreated : EventArguments.UserCreated = {
-                        UserId = userId
-                        Name = name
-                        EMail = email
-                        PasswordHash = passwordHash
-                    }
-                    return [ UserCreated userCreated ]
-                }
+            userCreated args
         | Some _, CreateUser _ ->
             "you can not have a create user event, when a user alread existis" |> Error
         | Some state, DeleteUser args ->
-            result {
-                let! userId = UserId.create args.UserId
-                // does it makes any sense to check, if the user id matches?
-                // i tend to no, but I leave it here
-                if (userId <> state.UserId) then
-                    return! "the userId does not match" |> Error
-                else
-                    return [ UserDeleted { UserId = userId} ]
-            }
+            userDeleted state args
         | Some _, ChangeEMail args ->
-            result {
-                let! userId = UserId.create args.UserId
-                let! email = EMail.create args.EMail
-                return [ EMailChanged { UserId = userId; EMail = email } ]
-            }
+            emailChanged args 
         | Some state, ChangePassword args ->
-            [] |> Ok
+            changePassword args
         | Some state, AddToGroup args ->
-            [] |> Ok
+            addedToGroup state args
         | Some state, RemoveFromGroup args ->
-            [] |> Ok
+            removedFromGroup state args
         | None, _ ->
             "you can not have any other event excpect of the created event on an empty state" |> Error
+
+
+    and userCreated args =
+        result {
+            let! name = NotEmptyString.create "Name" args.Name
+            let! email = EMail.create args.EMail
+            let! passwordHash = PasswordHash.create args.Password
+            let! userId = UserId.create <| Guid.NewGuid().ToString("N")
+            let userCreated : EventArguments.UserCreated = {
+                UserId = userId
+                Name = name
+                EMail = email
+                PasswordHash = passwordHash
+            }
+            return [ UserCreated userCreated ]
+        }
+
+
+    and userDeleted (state:State) args =
+        result {
+            let! userId = UserId.create args.UserId
+            // does it makes any sense to check, if the user id matches?
+            // i tend to no, but I leave it here
+            if (userId <> state.UserId) then
+                return! "the userId does not match" |> Error
+            else
+                return [ UserDeleted { UserId = userId} ]
+        }
+
+
+    and emailChanged args =
+        result {
+            let! userId = UserId.create args.UserId
+            let! email = EMail.create args.EMail
+            return [ EMailChanged { UserId = userId; EMail = email } ]
+        }
+
+
+    and changePassword args =
+        result {
+            let! userId = UserId.create args.UserId
+            let! passwordHash = PasswordHash.create args.Password
+            return [ PasswordChanged { UserId = userId; PasswordHash = passwordHash } ]
+        }
+
+
+    and addedToGroup state args =
+        result {
+            let! userId = UserId.create args.UserId
+            let! group = NotEmptyString.create "Group" args.Group
+            if (state.Groups |> List.exists (fun i -> i = group)) then
+                return! sprintf "user already assigned to group %s" args.Group |> Error
+            else
+                return [ AddedToGroup { UserId = userId; Group = group } ]
+        }
+
+
+    and removedFromGroup state args =
+        result {
+            let! userId = UserId.create args.UserId
+            let! group = NotEmptyString.create "Group" args.Group
+            if (state.Groups |> List.exists (fun i -> i = group)) then
+                return [ RemovedFromGroup { UserId = userId; Group = group } ]
+            else
+                return! sprintf "user is not member of the group %s" args.Group |> Error
+        }
                 
-                
+       
+    let private apply (state:State option) event : Result<State option,string> =
+        match state, event with
+        | None, UserCreated args ->
+            Some { 
+                UserId = args.UserId
+                EMail = args.EMail
+                Name = args.Name
+                PasswordHash = args.PasswordHash
+                Groups = []
+            } |> Ok
+        | Some _, UserCreated args ->
+            "a create event is invalid, when a user state already exisits" |> Error
+        | Some _, UserDeleted _ ->
+            None |> Ok
+        | Some state, EMailChanged args ->
+            { state with
+                EMail = args.EMail } 
+            |> Some |> Ok
+        | Some state, PasswordChanged args ->
+            { state with
+                PasswordHash = args.PasswordHash } 
+            |> Some |> Ok
+        | Some state, AddedToGroup args ->
+            { state with
+                Groups = args.Group :: state.Groups } 
+            |> Some |> Ok
+        | Some state, RemovedFromGroup args ->
+            let newGroups =
+                state.Groups
+                |> List.filter (fun i -> i<> args.Group)
+
+            { state with
+                Groups = newGroups } 
+            |> Some |> Ok
+        | _ ->
+            sprintf "can not apply the event of type %s to the state" (event.GetType().Name) |> Error
+
+
+    let aggregate = {
+        apply = apply
+        handle = handle
+    }
             
 
 

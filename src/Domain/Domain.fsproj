@@ -7,6 +7,8 @@
   <ItemGroup>
     <Compile Include="Result.fs" />
     <Compile Include="Common.Types.fs" />
+    <Compile Include="Common.fs" />
+    <Compile Include="User.Types.fs" />
     <Compile Include="User.fs" />
   </ItemGroup>
 
