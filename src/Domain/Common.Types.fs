@@ -4,6 +4,8 @@ open System.Text.RegularExpressions
 
 module Common =
 
+    open Domain.Common
+
     type EMail = private EMail of string
 
     type NotEmptyString = private NotEmptyString of string
@@ -24,10 +26,16 @@ module Common =
             if compiledRegex.IsMatch(email) then
                 EMail email |> Ok
             else
-                "invalid email adress" |> Error
+                "invalid email adress" 
+                |> DomainError
+                |> Error
 
 
         let value (EMail email) = email
+
+
+        /// use only for event dto convertion
+        let fromEventDto email = EMail email
 
 
     module NotEmptyString =
@@ -36,12 +44,18 @@ module Common =
 
         let create label notEmptyStr =
             if String.IsNullOrWhiteSpace(notEmptyStr) then
-                sprintf "%s must not be empty" label |> Error
+                sprintf "%s must not be empty" label
+                |> DomainError
+                |> Error
             else
                 NotEmptyString notEmptyStr |> Ok
 
 
         let value (NotEmptyString str) = str
+
+        
+        /// use only for event dto convertion
+        let fromEventDto str = NotEmptyString str
                 
             
         

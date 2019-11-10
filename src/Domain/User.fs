@@ -9,6 +9,7 @@ open Common
 
 module User =
 
+    open Common
 
     type State = {
         UserId:UserId
@@ -104,12 +105,14 @@ module User =
         | RemovedFromGroup of EventArguments.RemovedFromGroup
 
 
-    let rec private handle (state:State option) command : Result<Event list,string> =
+    let rec private handle (state:State option) command : Result<Event list,Errors> =
         match state,command with
         | None, CreateUser args ->
             userCreated args
         | Some _, CreateUser _ ->
-            "you can not have a create user event, when a user alread existis" |> Error
+            "you can not have a create user event, when a user alread existis"
+            |> DomainError
+            |> Error
         | Some state, DeleteUser args ->
             userDeleted state args
         | Some _, ChangeEMail args ->
@@ -121,7 +124,9 @@ module User =
         | Some state, RemoveFromGroup args ->
             removedFromGroup state args
         | None, _ ->
-            "you can not have any other event excpect of the created event on an empty state" |> Error
+            "you can not have any other event excpect of the created event on an empty state"
+            |> DomainError
+            |> Error
 
 
     and userCreated args =
@@ -146,7 +151,10 @@ module User =
             // does it makes any sense to check, if the user id matches?
             // i tend to no, but I leave it here
             if (userId <> state.UserId) then
-                return! "the userId does not match" |> Error
+                return! 
+                    "the userId does not match" 
+                    |> DomainError
+                    |> Error
             else
                 return [ UserDeleted { UserId = userId} ]
         }
@@ -173,7 +181,10 @@ module User =
             let! userId = UserId.create args.UserId
             let! group = NotEmptyString.create "Group" args.Group
             if (state.Groups |> List.exists (fun i -> i = group)) then
-                return! sprintf "user already assigned to group %s" args.Group |> Error
+                return! 
+                    sprintf "user already assigned to group %s" args.Group
+                    |> DomainError
+                    |> Error
             else
                 return [ AddedToGroup { UserId = userId; Group = group } ]
         }
@@ -186,11 +197,14 @@ module User =
             if (state.Groups |> List.exists (fun i -> i = group)) then
                 return [ RemovedFromGroup { UserId = userId; Group = group } ]
             else
-                return! sprintf "user is not member of the group %s" args.Group |> Error
+                return! 
+                    sprintf "user is not member of the group %s" args.Group
+                    |> DomainError
+                    |> Error
         }
                 
        
-    let private apply (state:State option) event : Result<State option,string> =
+    let private apply (state:State option) event : Result<State option,Errors> =
         match state, event with
         | None, UserCreated args ->
             Some { 
@@ -201,7 +215,7 @@ module User =
                 Groups = []
             } |> Ok
         | Some _, UserCreated args ->
-            "a create event is invalid, when a user state already exisits" |> Error
+            DomainError "a create event is invalid, when a user state already exisits" |> Error
         | Some _, UserDeleted _ ->
             None |> Ok
         | Some state, EMailChanged args ->
@@ -225,7 +239,9 @@ module User =
                 Groups = newGroups } 
             |> Some |> Ok
         | _ ->
-            sprintf "can not apply the event of type %s to the state" (event.GetType().Name) |> Error
+            sprintf "can not apply the event of type %s to the state" (event.GetType().Name)
+            |> DomainError
+            |> Error
 
 
     let aggregate = {

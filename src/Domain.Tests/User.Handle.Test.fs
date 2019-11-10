@@ -24,7 +24,7 @@ module HandleTest =
         
         match result, command with
         | Error e, _ ->
-            failwith (sprintf "test error: %s" e)
+            failwith (sprintf "test error: %A" e)
         | Ok [ UserCreated result ], CreateUser command ->
             test <@ String.IsNullOrEmpty(UserId.value result.UserId) |> not @>
             test <@ (NotEmptyString.value result.Name) = command.Name @>

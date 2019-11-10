@@ -4,6 +4,8 @@
 module User =
 
     open System
+    open Domain.Common
+
 
     type UserId = private UserId of string
 
@@ -18,12 +20,17 @@ module User =
             
         let create userId =
             if String.IsNullOrWhiteSpace(userId) then
-                sprintf "user id must not be empty" |> Error
+                sprintf "user id must not be empty" 
+                |> DomainError
+                |> Error
             else
                 UserId userId |> Ok
 
 
         let value (UserId userId) = userId
+
+        /// use only for event dto convertion
+        let fromEventDto userId = UserId userId
 
 
     module PasswordHash =
@@ -34,7 +41,9 @@ module User =
 
         let create password =
             if String.IsNullOrEmpty(password) then
-                "password must not be empty" |> Error
+                "password must not be empty" 
+                |> DomainError
+                |> Error
             else
                 let salt = Array.zeroCreate 16
                 use rng = RandomNumberGenerator.Create()
@@ -68,4 +77,8 @@ module User =
                 )
             let hashedString = Convert.ToBase64String(hashed)
             hashedString = hashPair.Hash
+
+
+        /// use only for event dto convertion
+        let fromEventDto salt hash = PasswordHash { Hash = hash; Salt = salt }
 
