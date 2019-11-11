@@ -15,6 +15,7 @@ module HandleTest =
     [<Fact>]
     let ``create user should return a user created event if all is good`` () =
         let command = CreateUser {
+            UserId = "myawesomeUser01"
             CreateUser.EMail = "mymail@test.com"
             Name = "Daniel"
             Password = "secret"

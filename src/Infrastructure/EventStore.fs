@@ -9,6 +9,7 @@ module EventStore =
     open Newtonsoft.Json
     open Streamstone
     open Domain.Common
+    open Dtos.Common
     
     
     let connectionString = ""
@@ -21,20 +22,19 @@ module EventStore =
         Version:int
     }
 
-    let inline toEventData aggregate (data:^ev when ^ev : (member EventType:string)) =
+    let private toEventData aggregate (data:IEvent) =
         let id = sprintf "%s-%s" aggregate (Guid.NewGuid().ToString("N"))
         let json = JsonConvert.SerializeObject(data)
-        let eventType = (^ev: (member EventType:string) data)
         let properties = {
             Id = id            
-            EventType = eventType
+            EventType = data.EventType
             Data = json
             Version = 0
         }
         EventData(EventId.From(id),EventProperties.From(properties))
 
 
-    let inline storeEvents eventTable aggregate id (events:^ev list when ^ev : (member EventType:string)) =
+    let storeEvents eventTable aggregate id (events:IEvent list) =
         task {
             let partitionKey = sprintf "%s-%s" aggregate id
             let partition = Partition(eventTable,partitionKey)
@@ -82,7 +82,7 @@ module EventStore =
 
     module User =
 
-        open Dtos.User
+        open Dtos.User.Events
         open System.Threading.Tasks
 
         let readEvents eventTable aggregate startVersion id : Task<Result<(Domain.User.Event * int) list option,Errors>> =
@@ -90,22 +90,22 @@ module EventStore =
                 match event.EventType with
                 | x when x = nameof UserCreated ->
                     let e = JsonConvert.DeserializeObject<UserCreated>(event.Data)
-                    e |> Dtos.User.toDomain, event.Version
+                    e |> toDomain, event.Version
                 | x when x = nameof  UserDeleted ->
                     let e = JsonConvert.DeserializeObject<UserDeleted>(event.Data)
-                    e |> Dtos.User.toDomain, event.Version
+                    e |> toDomain, event.Version
                 | x when x = nameof  EMailChanged ->
                     let e = JsonConvert.DeserializeObject<EMailChanged>(event.Data)
-                    e |> Dtos.User.toDomain, event.Version
+                    e |> toDomain, event.Version
                 | x when x = nameof  PasswordChanged ->
                     let e = JsonConvert.DeserializeObject<PasswordChanged>(event.Data)
-                    e |> Dtos.User.toDomain, event.Version
+                    e |> toDomain, event.Version
                 | x when x = nameof  AddedToGroup ->
                     let e = JsonConvert.DeserializeObject<AddedToGroup>(event.Data)
-                    e |> Dtos.User.toDomain, event.Version
+                    e |> toDomain, event.Version
                 | x when x = nameof  RemovedFromGroup ->
                     let e = JsonConvert.DeserializeObject<RemovedFromGroup>(event.Data)
-                    e |> Dtos.User.toDomain, event.Version
+                    e |> toDomain, event.Version
                 | _ ->
                     failwith "can not convert event"
 

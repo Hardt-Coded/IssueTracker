@@ -23,6 +23,7 @@ module User =
     module CommandArguments =
 
         type CreateUser = {
+            UserId:string
             Name:string
             EMail:string
             Password:string
@@ -134,7 +135,7 @@ module User =
             let! name = NotEmptyString.create "Name" args.Name
             let! email = EMail.create args.EMail
             let! passwordHash = PasswordHash.create args.Password
-            let! userId = UserId.create <| Guid.NewGuid().ToString("N")
+            let! userId = UserId.create args.UserId
             let userCreated : EventArguments.UserCreated = {
                 UserId = userId
                 Name = name
@@ -204,32 +205,32 @@ module User =
         }
                 
        
-    let private apply (state:State option) event : Result<State option,Errors> =
+    let private apply (state:State option) event : State option =
         match state, event with
         | None, UserCreated args ->
-            Some { 
+            { 
                 UserId = args.UserId
                 EMail = args.EMail
                 Name = args.Name
                 PasswordHash = args.PasswordHash
                 Groups = []
-            } |> Ok
+            } |> Some
         | Some _, UserCreated args ->
-            DomainError "a create event is invalid, when a user state already exisits" |> Error
+            failwith "a create event is invalid, when a user state already exisits"
         | Some _, UserDeleted _ ->
-            None |> Ok
+            None
         | Some state, EMailChanged args ->
             { state with
                 EMail = args.EMail } 
-            |> Some |> Ok
+            |> Some
         | Some state, PasswordChanged args ->
             { state with
                 PasswordHash = args.PasswordHash } 
-            |> Some |> Ok
+            |> Some
         | Some state, AddedToGroup args ->
             { state with
                 Groups = args.Group :: state.Groups } 
-            |> Some |> Ok
+            |> Some
         | Some state, RemovedFromGroup args ->
             let newGroups =
                 state.Groups
@@ -237,16 +238,21 @@ module User =
 
             { state with
                 Groups = newGroups } 
-            |> Some |> Ok
+            |> Some
         | _ ->
             sprintf "can not apply the event of type %s to the state" (event.GetType().Name)
-            |> DomainError
-            |> Error
+            |> failwith
+            
 
 
-    let aggregate = {
+    let private exec = Common.exec apply
+    let private execWithVersion = Common.execWithEvents apply
+
+    let aggregate : Aggregate<_,_,_,Errors> = {
         apply = apply
         handle = handle
+        exec = exec
+        execWithVersion = execWithVersion
     }
             
 

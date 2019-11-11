@@ -18,6 +18,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{7A37A5F2
 EndProject
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Infrastructure", "src\Infrastructure\Infrastructure.fsproj", "{230E4680-7FEE-4727-AA66-95368A0B7394}"
 EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Console.Test", "src\Console.Test\Console.Test.fsproj", "{3EBB35DB-4500-4D22-949B-8C73212C10AF}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -40,12 +42,17 @@ Global
 		{230E4680-7FEE-4727-AA66-95368A0B7394}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{230E4680-7FEE-4727-AA66-95368A0B7394}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{230E4680-7FEE-4727-AA66-95368A0B7394}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3EBB35DB-4500-4D22-949B-8C73212C10AF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3EBB35DB-4500-4D22-949B-8C73212C10AF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3EBB35DB-4500-4D22-949B-8C73212C10AF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3EBB35DB-4500-4D22-949B-8C73212C10AF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{14070DA0-7387-4F88-91DA-AD88035DEB32} = {7A37A5F2-2BBD-448A-8F1E-1AF675C7F71F}
+		{3EBB35DB-4500-4D22-949B-8C73212C10AF} = {7A37A5F2-2BBD-448A-8F1E-1AF675C7F71F}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {28D75EA8-18C7-4A9F-893E-C9451B38C07D}
