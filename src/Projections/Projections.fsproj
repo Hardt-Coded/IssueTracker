@@ -9,6 +9,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\scr\Services\Services.fsproj" />
     <ProjectReference Include="..\Domain\Domain.fsproj" />
     <ProjectReference Include="..\Dtos\Dtos.fsproj" />
     <ProjectReference Include="..\Infrastructure\Infrastructure.fsproj" />

@@ -10,15 +10,14 @@ module EventStore =
 
     open System
     open FSharp.Control.Tasks.V2
-    open Newtonsoft.Json
+    open Newtonsoft.Json.Linq
     open Domain.Common
     open Dtos.Common
     open CosmoStore
     open CosmoStore.TableStorage
+    open System.Threading.Tasks
 
     
-    
-    let connectionString = ""
 
     [<CLIMutable>]
     type EventEntity = {
@@ -28,22 +27,6 @@ module EventStore =
         Version:int
     }
 
-    let private tableName = "IssueTrackerEventSource"
-
-
-    let getEventStore connectionString =
-        task {
-            let account = CloudStorageAccount.Parse(connectionString)
-            let authKey = account.Credentials.ExportBase64EncodedKey()
-            let config = 
-                if (connectionString.StartsWith("UseDevelopmentStorage")) then
-                    TableStorage.Configuration.CreateDefaultForLocalEmulator ()
-                else
-                    TableStorage.Configuration.CreateDefault account.Credentials.AccountName authKey            
-            let config = { config with TableName = tableName }            
-            return TableStorage.EventStore.getEventStore config
-        }
-        
         
 
 
@@ -59,9 +42,9 @@ module EventStore =
         }
 
 
-    let storeEvents connectionString aggregate id (events:IEvent list) =
+    let storeEvents (getEventStore:unit -> Task<EventStore<JToken,int64>>) aggregate id (events:IEvent list) =
         task {
-            let! eventStore = getEventStore connectionString
+            let! eventStore = getEventStore ()
             let streamId = sprintf "%s-%s" aggregate id
                 
             try 
@@ -81,21 +64,18 @@ module EventStore =
         }
 
 
-    let private readAllEvents connectionString eventConverter aggregate id =
+    let private readAllEvents (getEventStore:unit -> Task<EventStore<JToken,int64>>) eventConverter aggregate id =
         task {
-            let! eventStore = getEventStore connectionString
+            let! eventStore = getEventStore ()
             let streamId = sprintf "%s-%s" aggregate id
             try
                 let! result = EventsReadRange.AllEvents |> eventStore.GetEvents streamId
-                match result with
-                | [] ->
-                    return None |> Ok
-                | _ ->
-                    let events =
-                        result
-                        |> Seq.map (eventConverter)
-                        |> Seq.toList
-                    return events |> Some |> Ok
+                
+                let events =
+                    result
+                    |> Seq.map (eventConverter)
+                    |> Seq.toList
+                return events |> Ok
             with
             | _ as e ->
                 return e |> InfrastructureError |> Error
@@ -103,30 +83,26 @@ module EventStore =
         }
 
 
-    let private readEventsSpecificVersion connectionString eventConverter aggregate id version =
+    let private readEventsSpecificVersion (getEventStore:unit -> Task<EventStore<JToken,int64>>) eventConverter aggregate id version =
         task {
-            let! eventStore = getEventStore connectionString
+            let! eventStore = getEventStore ()
             let streamId = sprintf "%s-%s" aggregate id
             try
                 let! result = EventsReadRange.FromVersion(version) |> eventStore.GetEvents streamId
-                match result with
-                | [] ->
-                    return None |> Ok
-                | _ ->
-                    let events =
-                        result
-                        |> Seq.map (eventConverter)
-                        |> Seq.toList
-                    return events |> Some |> Ok
+                let events =
+                    result
+                    |> Seq.map (eventConverter)
+                    |> Seq.toList
+                return events |> Ok
             with
             | _ as e ->
                 return e |> InfrastructureError |> Error
                 
         }
 
-    let private readAllStreams connectionString aggregate =
+    let private readAllStreams (getEventStore:unit -> Task<EventStore<JToken,int64>>) aggregate =
         task {
-            let! eventStore = getEventStore connectionString
+            let! eventStore = getEventStore ()
             try
                 let! streams = StreamsReadFilter.StartsWith(aggregate) |> eventStore.GetStreams
                 return streams |> Ok
@@ -170,16 +146,19 @@ module EventStore =
                 failwith "can not convert event"
 
 
-        let readEvents connectionString aggregate id : Task<Result<(Domain.User.Event * int64) list option,Errors>> =
-            readAllEvents connectionString eventConverter aggregate id
+        let readEvents (getEventStore:unit -> Task<EventStore<JToken,int64>>) aggregate id : Task<Result<(Domain.User.Event * int64) list,Errors>> =
+            readAllEvents getEventStore eventConverter aggregate id
 
 
-        let readEventsStartSpecificVersion connectionString aggregate id version : Task<Result<(Domain.User.Event * int64) list option,Errors>> =
-            readEventsSpecificVersion connectionString eventConverter aggregate id version 
+        let readEventsStartSpecificVersion (getEventStore:unit -> Task<EventStore<JToken,int64>>) aggregate id version : Task<Result<(Domain.User.Event * int64) list,Errors>> =
+            readEventsSpecificVersion getEventStore eventConverter aggregate id version 
 
 
-        //let readAllEventsFromUser connectionString aggregate =
-        //    readAllEventsFromAggregate connectionString eventConverter aggregate
+        let readAllUserStreams (getEventStore:unit -> Task<EventStore<JToken,int64>>) aggregate : Task<Result<Stream<int64> list,Errors>> =
+            readAllStreams getEventStore aggregate
+
+        
+        
             
                     
                 

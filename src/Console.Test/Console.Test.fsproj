@@ -10,9 +10,14 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Terminal.Gui.Elmish" Version="0.1.6" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\Domain\Domain.fsproj" />
     <ProjectReference Include="..\Dtos\Dtos.fsproj" />
     <ProjectReference Include="..\Infrastructure\Infrastructure.fsproj" />
+    <ProjectReference Include="..\Projections\Projections.fsproj" />
   </ItemGroup>
 
 </Project>

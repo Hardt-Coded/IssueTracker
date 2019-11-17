@@ -11,18 +11,18 @@ module Common =
     type Aggregate<'state,'command,'event, 'error> = {
         handle: 'state option -> 'command -> Result<'event list,Errors>
         apply: 'state option -> 'event -> 'state option
-        exec: 'state option -> Result<('event * int64) list option,'error> -> 'state option
-        execWithVersion: 'state option -> Result<('event * int64) list option,'error> -> ('state * int64) option
+        exec: 'state option -> Result<('event * int64) list,'error> -> 'state option
+        execWithVersion: 'state option -> Result<('event * int64) list,'error> -> ('state * int64) option
     }
 
 
     let private execBase 
         (onEvents: ('event * int64) list -> 'state option) 
-        (events: Result<('event * int64) list option,'error>) =
+        (events: Result<('event * int64) list,'error>) =
         match events with
-        | Ok None ->
+        | Ok [] ->
             None
-        | Ok (Some events) ->
+        | Ok events ->
             onEvents events
         | Error e ->
             failwith "apply should not has any errors"
@@ -40,7 +40,7 @@ module Common =
     let execWithEvents 
         (apply:'state option -> 'event -> 'state option) 
         state
-        (events: Result<('event * int64) list option,'error>) =
+        (events: Result<('event * int64) list,'error>) =
         let onEvents events =
             let state =
                 ((state,0L), events)

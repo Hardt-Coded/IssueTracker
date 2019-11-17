@@ -21,7 +21,7 @@ module User =
     }
 
 
-    let create storeEvents connection (commandDto:CreateUser) = 
+    let create storeEvents getEventStore (commandDto:CreateUser) = 
         task {
             let command : CommandArguments.CreateUser = {
                 UserId = Guid.NewGuid().ToString("N")
@@ -37,7 +37,7 @@ module User =
                 let! versionResult =                     
                     events
                     |> List.map (fun i -> Dtos.User.Events.toDto i)
-                    |> storeEvents connection aggregateName command.UserId
+                    |> storeEvents getEventStore aggregateName command.UserId
 
                 return versionResult
             | Error e ->
@@ -45,14 +45,14 @@ module User =
         }
 
 
-    let delete readEvents storeEvents connection (commandDto:DeleteUser) =
+    let delete readEvents storeEvents getEventStore (commandDto:DeleteUser) =
         task {
             let command : CommandArguments.DeleteUser = {
                 UserId = commandDto.UserId
             }
 
             let! userEvents =
-                readEvents connection aggregateName command.UserId
+                readEvents getEventStore aggregateName command.UserId
 
             let user =
                 userEvents |> aggregate.exec None
@@ -65,7 +65,7 @@ module User =
                 let! versionResult =
                     newEvents
                     |> List.map (fun i -> Dtos.User.Events.toDto i)
-                    |> storeEvents connection aggregateName command.UserId 
+                    |> storeEvents getEventStore aggregateName command.UserId 
 
                 return versionResult
             | Error e ->
@@ -73,7 +73,7 @@ module User =
         }
 
 
-    let changeEMail readEvents storeEvents connection (commandDto:ChangeEMail) =
+    let changeEMail readEvents storeEvents getEventStore (commandDto:ChangeEMail) =
         task {
             let command : CommandArguments.ChangeEMail = {
                 UserId = commandDto.UserId
@@ -81,7 +81,7 @@ module User =
             }
 
             let! userEvents =
-                readEvents connection aggregateName command.UserId
+                readEvents getEventStore aggregateName command.UserId
             
             let user =
                 userEvents |> aggregate.exec None
@@ -94,7 +94,7 @@ module User =
                 let! versionResult =
                     newEvents
                     |> List.map (fun i -> Dtos.User.Events.toDto i)
-                    |> storeEvents connection aggregateName command.UserId 
+                    |> storeEvents getEventStore aggregateName command.UserId 
 
                 return versionResult
             | Error e ->
@@ -102,7 +102,7 @@ module User =
         }
 
 
-    let changePassword readEvents storeEvents connection (commandDto:ChangePassword) =
+    let changePassword readEvents storeEvents getEventStore (commandDto:ChangePassword) =
         task {
             let command : CommandArguments.ChangePassword = {
                 UserId = commandDto.UserId
@@ -110,7 +110,7 @@ module User =
             }
 
             let! userEvents =
-                readEvents connection aggregateName command.UserId
+                readEvents getEventStore aggregateName command.UserId
             
             let user =
                 userEvents |> aggregate.exec None
@@ -123,7 +123,7 @@ module User =
                 let! versionResult =
                     newEvents
                     |> List.map (fun i -> Dtos.User.Events.toDto i)
-                    |> storeEvents connection aggregateName command.UserId 
+                    |> storeEvents getEventStore aggregateName command.UserId 
 
                 return versionResult
             | Error e ->
@@ -131,7 +131,7 @@ module User =
         }
 
 
-    let addToGroup readEvents storeEvents connection (commandDto:AddToGroup) =
+    let addToGroup readEvents storeEvents getEventStore (commandDto:AddToGroup) =
         task {
             let command : CommandArguments.AddToGroup = {
                 UserId = commandDto.UserId
@@ -139,7 +139,7 @@ module User =
             }
 
             let! userEvents =
-                readEvents connection aggregateName command.UserId
+                readEvents getEventStore aggregateName command.UserId
             
             let user =
                 userEvents |> aggregate.exec None
@@ -152,7 +152,7 @@ module User =
                 let! versionResult =
                     newEvents
                     |> List.map (fun i -> Dtos.User.Events.toDto i)
-                    |> storeEvents connection aggregateName command.UserId 
+                    |> storeEvents getEventStore aggregateName command.UserId 
 
                 return versionResult
             | Error e ->
@@ -160,7 +160,7 @@ module User =
         }
 
 
-    let removeFromGroup readEvents storeEvents connection (commandDto:RemoveFromGroup) =
+    let removeFromGroup readEvents storeEvents getEventStore (commandDto:RemoveFromGroup) =
         task {
             let command : CommandArguments.RemoveFromGroup = {
                 UserId = commandDto.UserId
@@ -168,7 +168,7 @@ module User =
             }
 
             let! userEvents =
-                readEvents connection aggregateName command.UserId
+                readEvents getEventStore aggregateName command.UserId
             
             let user =
                 userEvents |> aggregate.exec None
@@ -181,7 +181,7 @@ module User =
                 let! versionResult =
                     newEvents
                     |> List.map (fun i -> Dtos.User.Events.toDto i)
-                    |> storeEvents connection aggregateName command.UserId 
+                    |> storeEvents getEventStore aggregateName command.UserId 
 
                 return versionResult
             | Error e ->
@@ -198,19 +198,19 @@ module User =
 
 
 
-    let createUser = create EventStore.storeEvents Common.connection
+    let createUser = create EventStore.storeEvents Common.getEventStore
 
-    let deleteUser = delete EventStore.User.readEvents EventStore.storeEvents Common.connection
+    let deleteUser = delete EventStore.User.readEvents EventStore.storeEvents Common.getEventStore
 
-    let changeUserEMail = changeEMail EventStore.User.readEvents EventStore.storeEvents Common.connection
+    let changeUserEMail = changeEMail EventStore.User.readEvents EventStore.storeEvents Common.getEventStore
 
-    let changeUserPassword = changePassword EventStore.User.readEvents EventStore.storeEvents Common.connection
+    let changeUserPassword = changePassword EventStore.User.readEvents EventStore.storeEvents Common.getEventStore
 
-    let addUserToGroup = addToGroup EventStore.User.readEvents EventStore.storeEvents Common.connection
+    let addUserToGroup = addToGroup EventStore.User.readEvents EventStore.storeEvents Common.getEventStore
 
-    let removeUserFromGroup = removeFromGroup EventStore.User.readEvents EventStore.storeEvents Common.connection
+    let removeUserFromGroup = removeFromGroup EventStore.User.readEvents EventStore.storeEvents Common.getEventStore
     
-    let getUser = get EventStore.User.readEvents Common.connection
+    let getUser = get EventStore.User.readEvents Common.getEventStore
 
 
     let userService = {
