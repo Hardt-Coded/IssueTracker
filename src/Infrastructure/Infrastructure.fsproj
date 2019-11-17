@@ -6,12 +6,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="Common.fs" />
     <Compile Include="EventStore.fs" />
-    <Compile Include="Services.fs" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Streamstone" Version="2.3.0" />
+    <PackageReference Include="CosmoStore.TableStorage" Version="3.0.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
     <PackageReference Include="TaskBuilder.fs" Version="2.1.0" />
   </ItemGroup>
 

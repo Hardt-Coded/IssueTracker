@@ -11,14 +11,14 @@ module Common =
     type Aggregate<'state,'command,'event, 'error> = {
         handle: 'state option -> 'command -> Result<'event list,Errors>
         apply: 'state option -> 'event -> 'state option
-        exec: 'state option -> Result<('event * int) list option,'error> -> 'state option
-        execWithVersion: 'state option -> Result<('event * int) list option,'error> -> ('state * int) option
+        exec: 'state option -> Result<('event * int64) list option,'error> -> 'state option
+        execWithVersion: 'state option -> Result<('event * int64) list option,'error> -> ('state * int64) option
     }
 
 
     let private execBase 
-        (onEvents: ('event * int) list -> 'state option) 
-        (events: Result<('event * int) list option,'error>) =
+        (onEvents: ('event * int64) list -> 'state option) 
+        (events: Result<('event * int64) list option,'error>) =
         match events with
         | Ok None ->
             None
@@ -29,21 +29,21 @@ module Common =
 
 
     let exec (apply:'state option -> 'event -> 'state option) state events =
-        let onEvents (events: ('event * int) list) =
+        let onEvents (events: ('event * int64) list) =
             let state =
                 (state, events)
                 ||> List.fold (fun state (event,version) -> event |> apply state)
             state
-
+        
         execBase onEvents events
 
     let execWithEvents 
         (apply:'state option -> 'event -> 'state option) 
         state
-        (events: Result<('event * int) list option,'error>) =
+        (events: Result<('event * int64) list option,'error>) =
         let onEvents events =
             let state =
-                ((state,0), events)
+                ((state,0L), events)
                 ||> List.fold (fun state (event,version) -> 
                     let (state,_) = state
                     event |> apply state, version)

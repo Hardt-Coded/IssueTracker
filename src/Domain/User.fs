@@ -115,7 +115,7 @@ module User =
             |> DomainError
             |> Error
         | Some state, DeleteUser args ->
-            userDeleted state args
+            userDeleted args
         | Some _, ChangeEMail args ->
             emailChanged args 
         | Some state, ChangePassword args ->
@@ -125,9 +125,10 @@ module User =
         | Some state, RemoveFromGroup args ->
             removedFromGroup state args
         | None, _ ->
-            "you can not have any other event excpect of the created event on an empty state"
+            "user does not exists"
             |> DomainError
             |> Error
+
 
 
     and userCreated args =
@@ -146,18 +147,10 @@ module User =
         }
 
 
-    and userDeleted (state:State) args =
+    and userDeleted args =
         result {
             let! userId = UserId.create args.UserId
-            // does it makes any sense to check, if the user id matches?
-            // i tend to no, but I leave it here
-            if (userId <> state.UserId) then
-                return! 
-                    "the userId does not match" 
-                    |> DomainError
-                    |> Error
-            else
-                return [ UserDeleted { UserId = userId} ]
+            return [ UserDeleted { UserId = userId} ]
         }
 
 

@@ -7,24 +7,29 @@ open Dtos.User.Commands
 [<EntryPoint>]
 let main argv =
     
-    //let testUser = {
-    //    EMail = "muh@test.de"
-    //    Name = "Einhorni"
-    //    Password = "test1234"
-    //}
 
-    //let version = Services.User.createUser testUser |> Async.AwaitTask |> Async.RunSynchronously
+    //for i in 1..100 do
+    //    let testUser = {
+    //        EMail = sprintf "muh%03d@test.de" i
+    //        Name = sprintf "Einhorni %3d" i
+    //        Password = "test1234"
+    //    }
 
-    //printfn "%A" version
+    //    let version = Services.User.createUser testUser |> Async.AwaitTask |> Async.RunSynchronously
+    //    printfn "%A" version
+        
 
 
-    let user = Services.User.getUser "4ed44f214eb24a74b95fbed696679d6a" |> Async.AwaitTask |> Async.RunSynchronously
+    
+    
+
+    let user = Services.User.getUser "01ff7d19a9f4459aaf91b73d381f030d" |> Async.AwaitTask |> Async.RunSynchronously
     printfn "%A" user
     
-    let version = Services.User.deleteUser { UserId = "4ed44f214eb24a74b95fbed696679d6a" } |> Async.AwaitTask |> Async.RunSynchronously
+    let version = Services.User.deleteUser { UserId = "01ff7d19a9f4459aaf91b73d381f030d" } |> Async.AwaitTask |> Async.RunSynchronously
     printfn "%A" version
 
-    let user = Services.User.getUser "4ed44f214eb24a74b95fbed696679d6a" |> Async.AwaitTask |> Async.RunSynchronously
+    let user = Services.User.getUser "01ff7d19a9f4459aaf91b73d381f030d" |> Async.AwaitTask |> Async.RunSynchronously
     printfn "%A" user
 
 

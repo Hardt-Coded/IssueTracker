@@ -12,13 +12,17 @@ Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "Domain", "src\Domain\Domain
 EndProject
 Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "Domain.Tests", "src\Domain.Tests\Domain.Tests.fsproj", "{14070DA0-7387-4F88-91DA-AD88035DEB32}"
 EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Dtos", "src\Dtos\Dtos.fsproj", "{9E054D6C-CD99-43FE-BF00-B4DBFEFC7E07}"
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "Dtos", "src\Dtos\Dtos.fsproj", "{9E054D6C-CD99-43FE-BF00-B4DBFEFC7E07}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{7A37A5F2-2BBD-448A-8F1E-1AF675C7F71F}"
 EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Infrastructure", "src\Infrastructure\Infrastructure.fsproj", "{230E4680-7FEE-4727-AA66-95368A0B7394}"
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "Infrastructure", "src\Infrastructure\Infrastructure.fsproj", "{230E4680-7FEE-4727-AA66-95368A0B7394}"
 EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Console.Test", "src\Console.Test\Console.Test.fsproj", "{3EBB35DB-4500-4D22-949B-8C73212C10AF}"
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "Console.Test", "src\Console.Test\Console.Test.fsproj", "{3EBB35DB-4500-4D22-949B-8C73212C10AF}"
+EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Services", "scr\Services\Services.fsproj", "{05660E3D-056C-458A-A5D4-E545FFE4A4E1}"
+EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Projections", "src\Projections\Projections.fsproj", "{F0B0E68D-5A7F-47C3-B8B2-C581DE4B1078}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -46,6 +50,14 @@ Global
 		{3EBB35DB-4500-4D22-949B-8C73212C10AF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3EBB35DB-4500-4D22-949B-8C73212C10AF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3EBB35DB-4500-4D22-949B-8C73212C10AF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{05660E3D-056C-458A-A5D4-E545FFE4A4E1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{05660E3D-056C-458A-A5D4-E545FFE4A4E1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{05660E3D-056C-458A-A5D4-E545FFE4A4E1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{05660E3D-056C-458A-A5D4-E545FFE4A4E1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F0B0E68D-5A7F-47C3-B8B2-C581DE4B1078}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F0B0E68D-5A7F-47C3-B8B2-C581DE4B1078}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F0B0E68D-5A7F-47C3-B8B2-C581DE4B1078}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F0B0E68D-5A7F-47C3-B8B2-C581DE4B1078}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
