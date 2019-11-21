@@ -24,6 +24,12 @@ module User =
         }
 
         [<CLIMutable>]
+        type ChangeName = {
+            UserId:string
+            Name:string
+        }
+
+        [<CLIMutable>]
         type ChangePassword = {
             UserId:string
             Password:string
@@ -73,6 +79,16 @@ module User =
                 EventType:string
                 UserId:string
                 EMail:string
+            }
+            interface IEvent with
+                member this.EventType = this.EventType
+
+
+        type NameChanged = 
+            {
+                EventType:string
+                UserId:string
+                Name:string
             }
             interface IEvent with
                 member this.EventType = this.EventType
@@ -139,6 +155,12 @@ module User =
                     EMail = EMail.value e.EMail
                     EventType = "EMailChanged"
                 } |> unbox
+            | Domain.User.NameChanged e ->
+                {
+                    UserId = UserId.value e.UserId
+                    Name = NotEmptyString.value e.Name
+                    EventType = "NameChanged"
+                } |> unbox
             | Domain.User.PasswordChanged e ->
                 let hashPair = PasswordHash.value e.PasswordHash
                 {
@@ -187,6 +209,13 @@ module User =
                         EMail = EMail.fromEventDto e.EMail
                     }
                 result |> Domain.User.EMailChanged
+            | :? NameChanged as e ->
+                let result:Domain.User.EventArguments.NameChanged =
+                    {
+                        UserId = UserId.fromEventDto e.UserId
+                        Name = NotEmptyString.fromEventDto e.Name
+                    }
+                result |> Domain.User.NameChanged
             | :? PasswordChanged as e ->
                 let result:Domain.User.EventArguments.PasswordChanged =
                     {

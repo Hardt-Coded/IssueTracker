@@ -27,6 +27,7 @@ type UserFormData =
 
 type Form =
     | ChangeEMailForm
+    | ChangeNameForm
     | ChangePasswordForm
     | AddToGroupForm
     | RemoveFromGroupForm
@@ -52,17 +53,21 @@ type Msg =
     | ChangeSelectedUser of string
 
     | StartChangeEMail
+    | StartChangeName
     | StartChangePassword
     | StartAddToGroup
     | StartRemoveFromGroup
 
 
     | ChangeEMail of string
+    | ChangeName of string
     | ChangePassword of string
+    
     | AddToGroup of string
     | RemoveFromGroup of string
 
     | ChangeEMailText of string
+    | ChangeNameText of string
     | ChangePasswordText of string
     | AddToGroupText of string
     | RemoveFromGroupText of string
@@ -133,6 +138,9 @@ let update msg model =
     | StartChangeEMail ->
         let newUserData = { UserFormData.Empty with EMail = model.CurrentUser |> Option.map (fun i -> i.EMail) |> Option.defaultValue "" }
         { model with Form = ChangeEMailForm; NewUserData = newUserData }, Cmd.none
+    | StartChangeName ->
+        let newUserData = { UserFormData.Empty with Name = model.CurrentUser |> Option.map (fun i -> i.Name) |> Option.defaultValue "" }
+        { model with Form = ChangeNameForm; NewUserData = newUserData }, Cmd.none
     | StartChangePassword->
         { model with Form = ChangePasswordForm }, Cmd.none
     | StartAddToGroup->
@@ -143,7 +151,7 @@ let update msg model =
     | ChangeEMail email->
         let changeEmailCmd =
             task {
-                let command:Dtos.User.Commands.ChangeEMail = {
+                let command:Domain.User.CommandArguments.ChangeEMail = {
                     UserId = model.UserId
                     EMail = email
                 }
@@ -155,10 +163,27 @@ let update msg model =
                     return Successfull
             } |> Cmd.OfTask.result
         model, changeEmailCmd
+
+    | ChangeName name->
+        let changeNameCmd =
+            task {
+                let command:Domain.User.CommandArguments.ChangeName = {
+                    UserId = model.UserId
+                    Name = name
+                }
+                let! res = Services.User.userService.ChangeName command
+                match res with
+                | Error e ->
+                    return (OnError e)
+                | Ok _ ->
+                    return Successfull
+            } |> Cmd.OfTask.result
+        model, changeNameCmd
+
     | ChangePassword pw ->
         let changePaswordCmd =
             task {
-                let command:Dtos.User.Commands.ChangePassword = {
+                let command:Domain.User.CommandArguments.ChangePassword = {
                     UserId = model.UserId
                     Password = pw
                 }
@@ -173,7 +198,7 @@ let update msg model =
     | AddToGroup group ->
         let addToGroupCmd =
             task {
-                let command:Dtos.User.Commands.AddToGroup = {
+                let command:Domain.User.CommandArguments.AddToGroup = {
                     UserId = model.UserId
                     Group = group
                 }
@@ -188,7 +213,7 @@ let update msg model =
     | RemoveFromGroup group ->
         let addToGroupCmd =
             task {
-                let command:Dtos.User.Commands.RemoveFromGroup = {
+                let command:Domain.User.CommandArguments.RemoveFromGroup = {
                     UserId = model.UserId
                     Group = group
                 }
@@ -203,6 +228,8 @@ let update msg model =
 
     | ChangeEMailText email->
         { model with NewUserData = { model.NewUserData with EMail = email } }, Cmd.none
+    | ChangeNameText name->
+        { model with NewUserData = { model.NewUserData with Name = name } }, Cmd.none
     | ChangePasswordText pw ->
         { model with NewUserData = { model.NewUserData with Password = pw } }, Cmd.none
     | AddToGroupText group ->
@@ -295,6 +322,11 @@ let changeEMailForm model dispatch =
     formWindow 
         "Change E-Mail" 
         (changeTextForm "New EMail" model.NewUserData.EMail false ChangeEMailText ChangeEMail dispatch)
+
+let changeNameForm model dispatch =
+    formWindow 
+        "Change Name" 
+        (changeTextForm "Your new Name" model.NewUserData.Name false ChangeNameText ChangeName dispatch)
 
 
 let changePasswordForm model dispatch =
@@ -395,13 +427,21 @@ let mainSite model dispatch : Terminal.Gui.View list =
                 Styles [
                     Pos (AbsPos 40, AbsPos 2)                        
                 ]
+                Text "Change Name"
+                OnClicked (fun () -> dispatch (StartChangeName))
+            ]
+
+            button [
+                Styles [
+                    Pos (AbsPos 60, AbsPos 2)                        
+                ]
                 Text "Change Password"
                 OnClicked (fun () -> dispatch (StartChangePassword))
             ]
 
             button [
                 Styles [
-                    Pos (AbsPos 60, AbsPos 2)                        
+                    Pos (AbsPos 80, AbsPos 2)                        
                 ]
                 Text "Add To Group"
                 OnClicked (fun () -> dispatch (StartAddToGroup))
@@ -409,7 +449,7 @@ let mainSite model dispatch : Terminal.Gui.View list =
 
             button [
                 Styles [
-                    Pos (AbsPos 80, AbsPos 2)                        
+                    Pos (AbsPos 100, AbsPos 2)                        
                 ]
                 Text "Remove From Group"
                 OnClicked (fun () -> dispatch (StartRemoveFromGroup))
@@ -451,6 +491,8 @@ let view model dispatch =
                 yield! mainSite model dispatch
             | ChangeEMailForm ->
                 changeEMailForm model dispatch
+            | ChangeNameForm ->
+                changeNameForm model dispatch
             | ChangePasswordForm ->
                 changePasswordForm model dispatch
             | AddToGroupForm ->
@@ -470,7 +512,14 @@ let main argv =
     
     printfn "Initiate app ..."
 
-    userListProjection <- Some (UserListProjection(printError))
+    let ulpStorageFileName = "userlist.json"
+
+    let ulp = 
+        UserListProjection(printError,
+            (fun () -> async { return Projections.FileStorage.loadProjection ulpStorageFileName }),
+            (fun list -> async { return Projections.FileStorage.storeProjection ulpStorageFileName list })
+        )
+    userListProjection <- Some (ulp)
 
     Program.mkProgram init update view 
     //|> Program.withSubscription (fun _ -> Cmd.ofSub App.timerSubscription)

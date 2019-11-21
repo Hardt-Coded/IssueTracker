@@ -38,6 +38,11 @@ module User =
             EMail:string
         }
 
+        type ChangeName = {
+            UserId:string
+            Name:string
+        }
+
         type ChangePassword = {
             UserId:string
             Password:string
@@ -58,6 +63,7 @@ module User =
         | CreateUser of CommandArguments.CreateUser
         | DeleteUser of CommandArguments.DeleteUser
         | ChangeEMail of CommandArguments.ChangeEMail
+        | ChangeName of CommandArguments.ChangeName
         | ChangePassword of CommandArguments.ChangePassword
         | AddToGroup of CommandArguments.AddToGroup
         | RemoveFromGroup of CommandArguments.RemoveFromGroup
@@ -81,6 +87,11 @@ module User =
             EMail:EMail
         }
 
+        type NameChanged = {
+            UserId:UserId
+            Name:NotEmptyString
+        }
+
         type PasswordChanged = {
             UserId:UserId
             PasswordHash:PasswordHash
@@ -101,6 +112,7 @@ module User =
         | UserCreated of EventArguments.UserCreated
         | UserDeleted of EventArguments.UserDeleted
         | EMailChanged of EventArguments.EMailChanged
+        | NameChanged of EventArguments.NameChanged
         | PasswordChanged of EventArguments.PasswordChanged
         | AddedToGroup of EventArguments.AddedToGroup
         | RemovedFromGroup of EventArguments.RemovedFromGroup
@@ -118,6 +130,8 @@ module User =
             userDeleted args
         | Some _, ChangeEMail args ->
             emailChanged args 
+        | Some _, ChangeName args ->
+            nameChanged args 
         | Some state, ChangePassword args ->
             changePassword args
         | Some state, AddToGroup args ->
@@ -159,6 +173,14 @@ module User =
             let! userId = UserId.create args.UserId
             let! email = EMail.create args.EMail
             return [ EMailChanged { UserId = userId; EMail = email } ]
+        }
+
+
+    and nameChanged args =
+        result {
+            let! userId = UserId.create args.UserId
+            let! name = NotEmptyString.create "Name" args.Name
+            return [ NameChanged { UserId = userId; Name = name } ]
         }
 
 
@@ -215,6 +237,10 @@ module User =
         | Some state, EMailChanged args ->
             { state with
                 EMail = args.EMail } 
+            |> Some
+        | Some state, NameChanged args ->
+            { state with
+                Name = args.Name } 
             |> Some
         | Some state, PasswordChanged args ->
             { state with

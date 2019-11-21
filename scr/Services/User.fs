@@ -12,23 +12,18 @@ module User =
     let aggregateName =  "User"
 
     type UserService = {
-        CreateUser:CreateUser->Task<Result<unit,Domain.Common.Errors>>
-        DeleteUser:DeleteUser->Task<Result<unit,Domain.Common.Errors>>
-        ChangeEMail:ChangeEMail->Task<Result<unit,Domain.Common.Errors>>
-        ChangePassword:ChangePassword->Task<Result<unit,Domain.Common.Errors>>
-        AddToGroup:AddToGroup->Task<Result<unit,Domain.Common.Errors>>
-        RemoveFromGroup:RemoveFromGroup->Task<Result<unit,Domain.Common.Errors>>
+        CreateUser:CommandArguments.CreateUser->Task<Result<unit,Domain.Common.Errors>>
+        DeleteUser:CommandArguments.DeleteUser->Task<Result<unit,Domain.Common.Errors>>
+        ChangeEMail:CommandArguments.ChangeEMail->Task<Result<unit,Domain.Common.Errors>>
+        ChangeName:CommandArguments.ChangeName->Task<Result<unit,Domain.Common.Errors>>
+        ChangePassword:CommandArguments.ChangePassword->Task<Result<unit,Domain.Common.Errors>>
+        AddToGroup:CommandArguments.AddToGroup->Task<Result<unit,Domain.Common.Errors>>
+        RemoveFromGroup:CommandArguments.RemoveFromGroup->Task<Result<unit,Domain.Common.Errors>>
     }
 
 
-    let create storeEvents getEventStore (commandDto:CreateUser) = 
+    let create storeEvents getEventStore (command:CommandArguments.CreateUser) = 
         task {
-            let command : CommandArguments.CreateUser = {
-                UserId = Guid.NewGuid().ToString("N")
-                Name = commandDto.Name
-                EMail = commandDto.EMail
-                Password = commandDto.Password
-            }
 
             // todo: vaidation, if user already exisits
             let events = aggregate.handle None (CreateUser command)
@@ -45,12 +40,9 @@ module User =
         }
 
 
-    let delete readEvents storeEvents getEventStore (commandDto:DeleteUser) =
+    let delete readEvents storeEvents getEventStore (command:CommandArguments.DeleteUser) =
         task {
-            let command : CommandArguments.DeleteUser = {
-                UserId = commandDto.UserId
-            }
-
+            
             let! userEvents =
                 readEvents getEventStore aggregateName command.UserId
 
@@ -73,12 +65,8 @@ module User =
         }
 
 
-    let changeEMail readEvents storeEvents getEventStore (commandDto:ChangeEMail) =
+    let changeEMail readEvents storeEvents getEventStore (command:CommandArguments.ChangeEMail) =
         task {
-            let command : CommandArguments.ChangeEMail = {
-                UserId = commandDto.UserId
-                EMail = commandDto.EMail
-            }
 
             let! userEvents =
                 readEvents getEventStore aggregateName command.UserId
@@ -102,12 +90,33 @@ module User =
         }
 
 
-    let changePassword readEvents storeEvents getEventStore (commandDto:ChangePassword) =
+    let changeName readEvents storeEvents getEventStore (command:CommandArguments.ChangeName) =
         task {
-            let command : CommandArguments.ChangePassword = {
-                UserId = commandDto.UserId
-                Password = commandDto.Password
-            }
+
+            let! userEvents =
+                readEvents getEventStore aggregateName command.UserId
+            
+            let user =
+                userEvents |> aggregate.exec None
+            
+            let newEvents =
+                aggregate.handle user (ChangeName command)
+
+            match newEvents with 
+            | Ok newEvents ->
+                let! versionResult =
+                    newEvents
+                    |> List.map (fun i -> Dtos.User.Events.toDto i)
+                    |> storeEvents getEventStore aggregateName command.UserId 
+
+                return versionResult
+            | Error e ->
+                return Error e
+        }
+
+
+    let changePassword readEvents storeEvents getEventStore (command:CommandArguments.ChangePassword) =
+        task {
 
             let! userEvents =
                 readEvents getEventStore aggregateName command.UserId
@@ -131,12 +140,8 @@ module User =
         }
 
 
-    let addToGroup readEvents storeEvents getEventStore (commandDto:AddToGroup) =
+    let addToGroup readEvents storeEvents getEventStore (command:CommandArguments.AddToGroup) =
         task {
-            let command : CommandArguments.AddToGroup = {
-                UserId = commandDto.UserId
-                Group=commandDto.Group
-            }
 
             let! userEvents =
                 readEvents getEventStore aggregateName command.UserId
@@ -160,12 +165,8 @@ module User =
         }
 
 
-    let removeFromGroup readEvents storeEvents getEventStore (commandDto:RemoveFromGroup) =
+    let removeFromGroup readEvents storeEvents getEventStore (command:CommandArguments.RemoveFromGroup) =
         task {
-            let command : CommandArguments.RemoveFromGroup = {
-                UserId = commandDto.UserId
-                Group=commandDto.Group
-            }
 
             let! userEvents =
                 readEvents getEventStore aggregateName command.UserId
@@ -204,6 +205,8 @@ module User =
 
     let changeUserEMail = changeEMail EventStore.User.readEvents EventStore.storeEvents Common.getEventStore
 
+    let changeUserName = changeName EventStore.User.readEvents EventStore.storeEvents Common.getEventStore
+
     let changeUserPassword = changePassword EventStore.User.readEvents EventStore.storeEvents Common.getEventStore
 
     let addUserToGroup = addToGroup EventStore.User.readEvents EventStore.storeEvents Common.getEventStore
@@ -217,6 +220,7 @@ module User =
         CreateUser = createUser
         DeleteUser = deleteUser
         ChangeEMail = changeUserEMail
+        ChangeName = changeUserName
         ChangePassword = changeUserPassword
         AddToGroup = addUserToGroup
         RemoveFromGroup = removeUserFromGroup

@@ -5,6 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="ProjectionStorage.fs" />
     <Compile Include="User.fs" />
   </ItemGroup>
 

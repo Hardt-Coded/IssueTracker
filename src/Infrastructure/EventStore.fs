@@ -133,6 +133,9 @@ module EventStore =
             | x when x = nameof  EMailChanged ->
                 let e = event.Data.ToObject<EMailChanged>()
                 e |> toDomain, event.Version
+            | x when x = nameof  NameChanged ->
+                let e = event.Data.ToObject<NameChanged>()
+                e |> toDomain, event.Version
             | x when x = nameof  PasswordChanged ->
                 let e = event.Data.ToObject<PasswordChanged>()
                 e |> toDomain, event.Version
