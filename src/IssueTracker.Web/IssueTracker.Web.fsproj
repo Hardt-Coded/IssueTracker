@@ -1,0 +1,47 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <EnableDefaultContentItems>false</EnableDefaultContentItems>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="Templates\App.fs" />
+    <Compile Include="Templates\Index.fs" />
+    <Compile Include="Templates\NotFound.fs" />
+    <Compile Include="Templates\InternalError.fs" />
+    <Compile Include="User\Admin\UserAdminModels.fs" />
+    <Compile Include="User\Admin\UserAdminViews.fs" />
+    <Compile Include="User\Admin\UserAdminController.fs" />
+    <Compile Include="User\Login\UserLoginModel.fs" />
+    <Compile Include="User\Login\UserLoginView.fs" />
+    <Compile Include="User\Login\UserLoginController.fs" />
+    <Compile Include="Config.fs" />
+
+    <Compile Include="Router.fs" />
+    <Compile Include="Program.fs" />
+    <Content Include="*.sqlite">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Properties\launchSettings.json" />
+    <Content Include="static\login.css" />
+    <Content Include="static\app.css" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="static\app.js" />
+    <None Include="web.config" CopyToOutputDirectory="PreserveNewest" />    
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Saturn" Version="0.10.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Domain\Domain.fsproj" />
+    <ProjectReference Include="..\Projections\Projections.fsproj" />
+    <ProjectReference Include="..\Services\Services.fsproj" />
+  </ItemGroup>
+  
+</Project>

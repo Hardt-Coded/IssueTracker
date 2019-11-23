@@ -18,6 +18,7 @@
     <ProjectReference Include="..\Dtos\Dtos.fsproj" />
     <ProjectReference Include="..\Infrastructure\Infrastructure.fsproj" />
     <ProjectReference Include="..\Projections\Projections.fsproj" />
+    <ProjectReference Include="..\Services\Services.fsproj" />
   </ItemGroup>
 
 </Project>

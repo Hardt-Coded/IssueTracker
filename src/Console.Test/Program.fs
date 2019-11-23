@@ -4,9 +4,41 @@ open FSharp.Control.Tasks
 open Terminal.Gui.Elmish
 open Projections.UserList
 open Domain.Types.Common
+open System
 
 
-let mutable userListProjection : UserListProjection option = None
+// init stuff
+
+printfn "Initiate app ..."
+
+let eventStoreConnection = "UseDevelopmentStorage=true;"
+let tableName = "IssueTrackerEventSource"
+let ulpStorageFileName = "userlist.json"
+
+let private getEventStore = Infrastructure.EventStore.eventStore tableName eventStoreConnection
+
+
+
+let private userEventStore =
+    Infrastructure.EventStore.User.createUserEventStore getEventStore "User"
+    
+
+let printError e =
+    match e with
+    | DomainError s ->
+        printfn "Error: %s" s
+    | InfrastructureError ex ->
+        printfn "Exception: %s" ex.Message
+
+let userListProjection = 
+    UserListProjection(userEventStore,
+        printError,
+        (fun () -> async { return Projections.FileStorage.loadProjection ulpStorageFileName }),
+        (fun list -> async { return Projections.FileStorage.storeProjection ulpStorageFileName list })
+    )
+
+let userService = Services.User.createUserService userEventStore 
+
 
 
 type UserFormData = 
@@ -81,12 +113,7 @@ type Msg =
 
 
 
-let printError e =
-    match e with
-    | DomainError s ->
-        printfn "Error: %s" s
-    | InfrastructureError ex ->
-        printfn "Exception: %s" ex.Message
+
     
 
 
@@ -105,23 +132,26 @@ let init () =
 
 let userListProjectionCmd () = 
     task {
-        match userListProjection with
-        | None ->
-            return Nothing
-        | Some up ->            
-            let! users = up.GetUserList()
-            return UsersLoaded users
+        let! users = userListProjection.GetUserList()
+        return UsersLoaded users
     } |> Cmd.OfTask.result
 
 
 let updateUserListProjectionCmd ()  = 
-    match userListProjection with
-    | None ->
-        Nothing
-    | Some up ->            
-        up.UpdateProjection ()
-        Nothing
+    userListProjection.UpdateProjection ()
+    Nothing
     |> Cmd.OfFunc.result
+
+
+let createEMailDuplicateValidation () =
+    task {
+        let! userList = userListProjection.GetUserList ()
+        let isEMailDuplicate = 
+            fun email -> 
+                userList 
+                |> List.exists (fun i -> String.Equals(i.EMail,email,StringComparison.InvariantCultureIgnoreCase))
+        return isEMailDuplicate
+    }
 
 
 let update msg model =
@@ -155,7 +185,13 @@ let update msg model =
                     UserId = model.UserId
                     EMail = email
                 }
-                let! res = Services.User.userService.ChangeEMail command
+
+                // get alle current emails
+                let! isEMailDuplicate = 
+                    createEMailDuplicateValidation ()
+
+
+                let! res = userService.ChangeEMail isEMailDuplicate command
                 match res with
                 | Error e ->
                     return (OnError e)
@@ -171,7 +207,7 @@ let update msg model =
                     UserId = model.UserId
                     Name = name
                 }
-                let! res = Services.User.userService.ChangeName command
+                let! res = userService.ChangeName command
                 match res with
                 | Error e ->
                     return (OnError e)
@@ -187,7 +223,7 @@ let update msg model =
                     UserId = model.UserId
                     Password = pw
                 }
-                let! res = Services.User.userService.ChangePassword command
+                let! res = userService.ChangePassword command
                 match res with
                 | Error e ->
                     return (OnError e)
@@ -202,7 +238,7 @@ let update msg model =
                     UserId = model.UserId
                     Group = group
                 }
-                let! res = Services.User.userService.AddToGroup command
+                let! res = userService.AddToGroup command
                 match res with
                 | Error e ->
                     return (OnError e)
@@ -217,7 +253,7 @@ let update msg model =
                     UserId = model.UserId
                     Group = group
                 }
-                let! res = Services.User.userService.RemoveFromGroup command
+                let! res = userService.RemoveFromGroup command
                 match res with
                 | Error e ->
                     return (OnError e)
@@ -510,16 +546,7 @@ let view model dispatch =
 [<EntryPoint>]
 let main argv =
     
-    printfn "Initiate app ..."
-
-    let ulpStorageFileName = "userlist.json"
-
-    let ulp = 
-        UserListProjection(printError,
-            (fun () -> async { return Projections.FileStorage.loadProjection ulpStorageFileName }),
-            (fun list -> async { return Projections.FileStorage.storeProjection ulpStorageFileName list })
-        )
-    userListProjection <- Some (ulp)
+   
 
     Program.mkProgram init update view 
     //|> Program.withSubscription (fun _ -> Cmd.ofSub App.timerSubscription)

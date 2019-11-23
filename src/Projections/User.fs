@@ -1,5 +1,7 @@
 ﻿namespace Projections
 
+open Infrastructure.EventStore.User
+
 module UserList =
 
     open Infrastructure
@@ -113,7 +115,8 @@ module UserList =
         
 
 
-    type UserListProjection(handleError,
+    type UserListProjection(userEventStore:UserEventStore,
+        handleError,
         loadProjection,
         storeProjection
         ) =
@@ -121,7 +124,7 @@ module UserList =
         let refreshUsers (state:State list) =
             async {
                 
-                let! streams = EventStore.User.readAllUserStreams Services.Common.getEventStore Services.User.aggregateName |> Async.AwaitTask
+                let! streams = userEventStore.ReadAllUserStreams () |> Async.AwaitTask
                 match streams with
                 | Error e ->
                     e |> handleError 
@@ -133,8 +136,8 @@ module UserList =
                     let currentIdsAndVersion =
                         state |> List.map (fun i -> i.UserId,i.Version)
 
-                    let aggregatePrefix = sprintf "%s-" Services.User.aggregateName
-
+                    let aggregatePrefix = sprintf "%s-" userEventStore.AggregateName
+                    
                     let newIds =
                         streams 
                         |> List.map (fun i -> i.Id.Replace(aggregatePrefix,""))
@@ -162,7 +165,7 @@ module UserList =
                         |> List.map (fun id ->
                             async {
                                 printf "."
-                                let! events = EventStore.User.readEvents Services.Common.getEventStore Services.User.aggregateName id |> Async.AwaitTask
+                                let! events = userEventStore.ReadEvents id |> Async.AwaitTask
                                 return id,events
                             }
                         )
@@ -173,7 +176,7 @@ module UserList =
                         |> List.map ( fun (id,version) ->
                             async {
                                 let nextVersion = version + 1L
-                                let! events = EventStore.User.readEventsStartSpecificVersion Services.Common.getEventStore Services.User.aggregateName id nextVersion |> Async.AwaitTask
+                                let! events = userEventStore.ReadEventsStartSpecificVersion id nextVersion |> Async.AwaitTask
                                 return id,events
                             }
                         )

@@ -116,6 +116,8 @@ module User =
         | PasswordChanged of EventArguments.PasswordChanged
         | AddedToGroup of EventArguments.AddedToGroup
         | RemovedFromGroup of EventArguments.RemovedFromGroup
+        
+        
 
 
     let rec private handle (state:State option) command : Result<Event list,Errors> =
@@ -142,7 +144,6 @@ module User =
             "user does not exists"
             |> DomainError
             |> Error
-
 
 
     and userCreated args =
@@ -258,7 +259,7 @@ module User =
             { state with
                 Groups = newGroups } 
             |> Some
-        | _ ->
+        | None, _ ->
             sprintf "can not apply the event of type %s to the state" (event.GetType().Name)
             |> failwith
             

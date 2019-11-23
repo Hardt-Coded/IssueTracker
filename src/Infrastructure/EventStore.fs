@@ -17,17 +17,26 @@ module EventStore =
     open CosmoStore.TableStorage
     open System.Threading.Tasks
 
-    
 
-    [<CLIMutable>]
-    type EventEntity = {
-        Id:string
-        EventType:string
-        Data:string
-        Version:int
-    }
+    // create eventStore
+    let eventStore tableName connection =
+        let lazyEventStore =
+            lazy(
+                task {
+                    let account = CloudStorageAccount.Parse(connection)
+                    let authKey = account.Credentials.ExportBase64EncodedKey()
+                    let config = 
+                        if (connection.StartsWith("UseDevelopmentStorage")) then
+                            TableStorage.Configuration.CreateDefaultForLocalEmulator ()
+                        else
+                            TableStorage.Configuration.CreateDefault account.Credentials.AccountName authKey            
+                    let config = { config with TableName = tableName }            
+                    return TableStorage.EventStore.getEventStore config
+                }    
+            )
 
-        
+        lazyEventStore.Force
+
 
 
     let private toEventData aggregate (data:IEvent) =
@@ -42,7 +51,7 @@ module EventStore =
         }
 
 
-    let storeEvents (getEventStore:unit -> Task<EventStore<JToken,int64>>) aggregate id (events:IEvent list) =
+    let private storeEvents (getEventStore:unit -> Task<EventStore<JToken,int64>>) aggregate id (events:IEvent list) =
         task {
             let! eventStore = getEventStore ()
             let streamId = sprintf "%s-%s" aggregate id
@@ -100,6 +109,7 @@ module EventStore =
                 
         }
 
+
     let private readAllStreams (getEventStore:unit -> Task<EventStore<JToken,int64>>) aggregate =
         task {
             let! eventStore = getEventStore ()
@@ -149,17 +159,35 @@ module EventStore =
                 failwith "can not convert event"
 
 
-        let readEvents (getEventStore:unit -> Task<EventStore<JToken,int64>>) aggregate id : Task<Result<(Domain.User.Event * int64) list,Errors>> =
+        let private readEvents (getEventStore:unit -> Task<EventStore<JToken,int64>>) aggregate id : Task<Result<(Domain.User.Event * int64) list,Errors>> =
             readAllEvents getEventStore eventConverter aggregate id
 
 
-        let readEventsStartSpecificVersion (getEventStore:unit -> Task<EventStore<JToken,int64>>) aggregate id version : Task<Result<(Domain.User.Event * int64) list,Errors>> =
+        let private readEventsStartSpecificVersion (getEventStore:unit -> Task<EventStore<JToken,int64>>) aggregate id version : Task<Result<(Domain.User.Event * int64) list,Errors>> =
             readEventsSpecificVersion getEventStore eventConverter aggregate id version 
 
 
-        let readAllUserStreams (getEventStore:unit -> Task<EventStore<JToken,int64>>) aggregate : Task<Result<Stream<int64> list,Errors>> =
+        let private readAllUserStreams (getEventStore:unit -> Task<EventStore<JToken,int64>>) aggregate : Task<Result<Stream<int64> list,Errors>> =
             readAllStreams getEventStore aggregate
 
+
+
+        type UserEventStore = {
+            StoreEvents: string -> IEvent list -> Task<Result<unit,Errors>>
+            ReadEvents: string -> Task<Result<(Domain.User.Event * int64) list,Errors>>
+            ReadEventsStartSpecificVersion: string -> int64 -> Task<Result<(Domain.User.Event * int64) list,Errors>>
+            ReadAllUserStreams: unit -> Task<Result<Stream<int64> list,Errors>>
+            AggregateName:string
+        }
+
+        let createUserEventStore (getEventStore:unit -> Task<EventStore<JToken,int64>>) aggregate =
+            {
+                AggregateName = aggregate
+                StoreEvents = storeEvents getEventStore aggregate
+                ReadEvents =  readEvents getEventStore aggregate
+                ReadEventsStartSpecificVersion =  readEventsStartSpecificVersion getEventStore aggregate
+                ReadAllUserStreams =  fun () -> readAllUserStreams getEventStore aggregate
+            }
         
         
             
