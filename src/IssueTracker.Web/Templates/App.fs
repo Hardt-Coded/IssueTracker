@@ -3,7 +3,7 @@ module App
 open Giraffe.GiraffeViewEngine
 open Microsoft.AspNetCore.Http
 
-let layout (content: XmlNode list) (ctx:HttpContext) =
+let layout (ctx:HttpContext) (content: XmlNode list)  =
     html [_class "has-navbar-fixed-top"] [
         head [] [
             meta [_charset "utf-8"]
@@ -13,10 +13,11 @@ let layout (content: XmlNode list) (ctx:HttpContext) =
             link [_rel "stylesheet"; _href "https://cdnjs.cloudflare.com/ajax/libs/bulma/0.6.1/css/bulma.min.css" ]
             link [_rel "stylesheet"; _href "/app.css" ]
             link [_rel "stylesheet"; _href "/login.css" ]
+            link [_rel "stylesheet"; _href "/admin.css" ]
 
         ]
         body [] [
-            yield nav [ _class "navbar is-fixed-top has-shadow" ] [
+            nav [ _class "navbar is-fixed-top has-shadow" ] [
                 div [_class "navbar-brand"] [
                     a [_class "navbar-item"; _href "/"] [
                         str "Start"
@@ -35,19 +36,20 @@ let layout (content: XmlNode list) (ctx:HttpContext) =
                     ]
                 ]
             ]
-            yield! content
-            yield footer [_class "footer is-fixed-bottom"] [
+            article [ _class "container" ] [
+                yield! content
+            ]
+            
+            footer [_class "footer is-fixed-bottom"] [
                 div [_class "container"] [
                     div [_class "content has-text-centered"] [
                         p [] [
-                            rawText "Powered by "
-                            a [_href "https://github.com/SaturnFramework/Saturn"] [rawText "Saturn"]
-                            rawText " - F# MVC framework created by "
-                            a [_href "http://lambdafactory.io"] [rawText "λFactory"]
+                            rawText "Created by "
+                            a [_href "https://www.hardt-solutions.com"; _target "_blank"] [rawText "Hardt IT-Solutions"]                            
                         ]
                     ]
                 ]
             ]
-            yield script [_src "/app.js"] []
+            script [_src "/app.js"] []
         ]
     ]

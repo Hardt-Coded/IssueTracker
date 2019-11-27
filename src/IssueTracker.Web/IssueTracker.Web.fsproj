@@ -5,6 +5,7 @@
     <EnableDefaultContentItems>false</EnableDefaultContentItems>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="Common.fs" />
     <Compile Include="Templates\App.fs" />
     <Compile Include="Templates\Index.fs" />
     <Compile Include="Templates\NotFound.fs" />
@@ -25,6 +26,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Properties\launchSettings.json" />
+    <Content Include="static\admin.css" />
     <Content Include="static\login.css" />
     <Content Include="static\app.css" />
   </ItemGroup>

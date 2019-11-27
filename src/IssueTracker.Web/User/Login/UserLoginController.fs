@@ -16,8 +16,8 @@
     open Microsoft.AspNetCore.Authentication.Cookies
 
 
-    let private renderLoginPage model ctx =
-        Controller.renderHtml ctx (UserLoginView.loginLayout model ctx)
+    let private renderLoginPage ctx model =
+        Controller.renderHtml ctx (UserLoginView.loginLayout ctx model)
 
 
     let private generateClaimPrincipal user =
@@ -47,7 +47,7 @@
 
             match user with
             | None ->
-                return renderLoginPage model ctx
+                return renderLoginPage ctx model
             | Some user ->
                 let! cUser = userService.GetUser user.UserId
 
@@ -63,35 +63,9 @@
                                 return (Controller.redirect ctx "/")
                             }
                         else
-                            task { return (renderLoginPage model ctx) }
+                            task { return (renderLoginPage ctx model) }
                     )
-                    |> Option.defaultValue (task { return (renderLoginPage model ctx) })
-
-
-                //match cUser with
-                //| None ->
-                //    return renderLoginPage model ctx
-                //| Some cUser ->
-                //    let isPasswordValid = Domain.Types.User.PasswordHash.isValid model.Password cUser.PasswordHash
-                //    if (isPasswordValid) then
-                //        let name = user.Name
-                //        let email = user.EMail
-                //        let userClaim = Claim(ClaimTypes.Name,name)
-                //        let emailClaim = Claim(ClaimTypes.Email,email)
-                //        let roleClaims =
-                //            cUser.Groups
-                //            |> List.map (fun i -> NotEmptyString.value i)
-                //            |> List.map (fun group -> new Claim(ClaimTypes.Role,group))
-                //        let claims = roleClaims @ [ userClaim; emailClaim ]
-
-                //        let userIdentity = new ClaimsIdentity(claims, "Cookies")
-                //        let principal = new ClaimsPrincipal(userIdentity);
-                //        do! ctx.SignInAsync(principal);
-
-                //        return (Controller.redirect ctx "/")
-                //    else
-                //        return renderLoginPage model ctx
-
+                    |> Option.defaultValue (task { return (renderLoginPage ctx model) })
             
         }
         
@@ -99,7 +73,7 @@
 
     let loginController = 
         controller {
-            index (fun ctx -> renderLoginPage Model.Empty ctx)
+            index (fun ctx -> renderLoginPage ctx Model.Empty)
             create login
         }
 

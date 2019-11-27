@@ -4,132 +4,133 @@
     open Microsoft.AspNetCore.Http
     open UserLoginModel
 
-    let loginView model ctx =
-            [
-                section [ 
-                    _class "hero is-success is-fullheight" 
+    let loginView ctx model =
+        [
+            section [ 
+                _class "hero is-success is-fullheight" 
+            ] [
+                div [ 
+                    _class "hero-body" 
                 ] [
                     div [ 
-                        _class "hero-body" 
+                        _class "container has-text-centered" 
                     ] [
                         div [ 
-                            _class "container has-text-centered" 
+                            _class "column is-4 is-offset-4" 
                         ] [
+                            h3 [ 
+                                _class "title has-text-black" 
+                            ] [ 
+                                str "Login" 
+                            ]
+
+                            hr [ _class "login-hr" ]
+
+                            p [ 
+                                _class "subtitle has-text-black" 
+                            ] [ 
+                                str "Please login to proceed." 
+                            ]
+
                             div [ 
-                                _class "column is-4 is-offset-4" 
+                                _class "box" 
                             ] [
-                                h3 [ 
-                                    _class "title has-text-black" 
-                                ] [ 
-                                    str "Login" 
-                                ]
-
-                                hr [ _class "login-hr" ]
-
-                                p [ 
-                                    _class "subtitle has-text-black" 
-                                ] [ 
-                                    str "Please login to proceed." 
-                                ]
-
-                                div [ 
-                                    _class "box" 
+                                figure [ 
+                                    _class "avatar" 
                                 ] [
-                                    figure [ 
-                                        _class "avatar" 
+                                    img [ _src "https://placehold.it/128x128" ] 
+                                ]
+
+                                form [ 
+                                    _action "/login" 
+                                    _method "POST"
+                                ] [ 
+                                    div [ 
+                                        _class "field" 
                                     ] [
-                                        img [ _src "https://placehold.it/128x128" ] 
+                                        div [ 
+                                            _class "control" 
+                                        ] [ 
+                                            input [ 
+                                                _class "input is-large"
+                                                _type "email"
+                                                _name "email"
+                                                _value model.EMail
+                                                _placeholder "Your Email" ] 
+                                        ] 
                                     ]
 
-                                    form [ 
-                                        _action "/login" 
-                                        _method "POST"
-                                    ] [ 
+                                    div [ 
+                                        _class "field" 
+                                    ] [
                                         div [ 
-                                            _class "field" 
+                                            _class "control" 
                                         ] [
-                                            div [ 
-                                                _class "control" 
-                                            ] [ 
-                                                input [ 
-                                                    _class "input is-large"
-                                                    _type "email"
-                                                    _name "email"
-                                                    _value model.EMail
-                                                    _placeholder "Your Email" ] 
+                                            input [
+                                                _class "input is-large"
+                                                _type "password"
+                                                _name "password"
+                                                _value model.Password
+                                                _placeholder "Your Password" 
                                             ] 
-                                        ]
-
-                                        div [ 
-                                            _class "field" 
-                                        ] [
-                                            div [ 
-                                                _class "control" 
-                                            ] [
-                                                input [
-                                                    _class "input is-large"
-                                                    _type "password"
-                                                    _name "password"
-                                                    _value model.Password
-                                                    _placeholder "Your Password" 
-                                                ] 
-                                            ] 
-                                        ]
-
-                                        div [ 
-                                            _class "field" 
-                                        ] [ 
-                                            label [ 
-                                                _class "checkbox" 
-                                            ] [ 
-                                                input [ _type "checkbox" ]
-                                                str "Remember me" 
-                                            ] 
-                                        ]
-
-                                        button [ 
-                                            _class "button is-block is-info is-large is-fullwidth" 
-                                        ] [
-                                            str "Login"
-                                            i [ 
-                                                _class "fa fa-sign-in"
-                                                attr "aria-hidden" "true"
-                                            ] [ ]
                                         ] 
+                                    ]
+
+                                    div [ 
+                                        _class "field" 
+                                    ] [ 
+                                        label [ 
+                                            _class "checkbox" 
+                                        ] [ 
+                                            input [ _type "checkbox" ]
+                                            str "Remember me" 
+                                        ] 
+                                    ]
+
+                                    button [ 
+                                        _class "button is-block is-info is-large is-fullwidth" 
+                                    ] [
+                                        str "Login"
+                                        i [ 
+                                            _class "fa fa-sign-in"
+                                            attr "aria-hidden" "true"
+                                        ] [ ]
                                     ] 
+                                ] 
+                            ]
+
+                            p [ 
+                                _class "has-text-grey" 
+                            ] [
+                                a [ 
+                                    _href "../" 
+                                ] [ 
+                                    str "Sign Up" 
                                 ]
 
-                                p [ 
-                                    _class "has-text-grey" 
-                                ] [
-                                    a [ 
-                                        _href "../" 
-                                    ] [ 
-                                        str "Sign Up" 
-                                    ]
+                                rawText "&nbsp;·&nbsp;"
 
-                                    rawText "&nbsp;·&nbsp;"
+                                a [ 
+                                    _href "../" 
+                                ] [ 
+                                    str "Forgot Password" 
+                                ]
 
-                                    a [ 
-                                        _href "../" 
-                                    ] [ 
-                                        str "Forgot Password" 
-                                    ]
+                                rawText "&nbsp;·&nbsp;"
 
-                                    rawText "&nbsp;·&nbsp;"
-
-                                    a [ 
-                                        _href "../" 
-                                    ] [ 
-                                        str "Need Help?" 
-                                    ] 
+                                a [ 
+                                    _href "../" 
+                                ] [ 
+                                    str "Need Help?" 
                                 ] 
                             ] 
                         ] 
                     ] 
-                ]
+                ] 
             ]
+        ]
 
 
-    let loginLayout model ctx =
-        App.layout (loginView model ctx) ctx
+    let loginLayout ctx model =
+        (loginView ctx model)
+        |> App.layout ctx

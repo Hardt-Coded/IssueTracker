@@ -26,7 +26,7 @@ let securedView = router {
     get "/" (fun next ctx -> htmlView (Index.layout ctx) next ctx)    
     get "/index.html" (redirectTo false "/")
     get "/default.html" (redirectTo false "/")
-    forward "/users" (fun next ctx -> UserAdminController.userController next ctx)
+    
 }
 
 let defaultView = router {
@@ -34,7 +34,12 @@ let defaultView = router {
     get "/index.html" securedView
     get "/default.html" securedView
 
-    get "/users" (fun next ctx -> securedView next ctx)    
+    forward "/users" (router {
+        pipe_through securedPipeline
+        forward "" (fun next ctx -> UserAdminController.userDetailRouter next ctx)
+    })  
+
+
     forward "/login" (fun next ctx -> UserLoginController.loginController next ctx)
     get "/logout" UserLoginController.logoutRouter
     
@@ -56,16 +61,5 @@ let appRouter = router {
 
 
 
-
-let myLazyCalc = 
-    lazy(
-        let r = 5
-        let l = 7
-        printfn "ich werde berechnet!"
-        r + l
-    )
-
-myLazyCalc.Force()
-myLazyCalc.Force()
 
 

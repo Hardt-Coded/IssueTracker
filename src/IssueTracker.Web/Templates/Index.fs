@@ -17,4 +17,4 @@ let index (ctx:HttpContext) =
     ]
 
 let layout ctx =
-    App.layout (index ctx) ctx
+    App.layout ctx (index ctx)
