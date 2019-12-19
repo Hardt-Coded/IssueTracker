@@ -1,10 +1,10 @@
-﻿namespace Domain.Types
+﻿namespace Users
 
 
-module User =
+module Types =
 
     open System
-    open Domain.Common
+    open Common.Domain
 
 
     type UserId = private UserId of string

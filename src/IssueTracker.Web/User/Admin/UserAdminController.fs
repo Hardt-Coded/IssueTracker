@@ -5,27 +5,30 @@ module UserAdminController
     open Microsoft.AspNetCore
     open Microsoft.AspNetCore.Http
     open Microsoft.Extensions.DependencyInjection
-    open Projections.UserList
-    open Domain.Types.Common
-    open Domain.User
+    open Users.Projections.UserList
+    open Common.Types
+    open Users.Domain
+    open Users.Types
+    open Users.Services
+    open Common.Domain
     open Saturn.ControllerHelpers
     open Giraffe
     open UserAdminViews
     open UserAdminModels
     open Common
-    open Domain.Types.User
+    
 
-    let convertErrorToString (error:Domain.Common.Errors) =
+    let convertErrorToString (error:Errors) =
         match error with
-        | Domain.Common.Errors.DomainError e ->
+        | Errors.DomainError e ->
             e
-        | Domain.Common.Errors.InfrastructureError ie ->
+        | InfrastructureError ie ->
             sprintf "an internal error has occured: %s" ie.Message
 
 
     open System
 
-    let createEMailDuplicateValidation (userListProjection:Projections.UserList.UserListProjection) =
+    let createEMailDuplicateValidation (userListProjection:UserListProjection) =
         task {
             let! userList = userListProjection.GetUserList ()
             let isEMailDuplicate = 
@@ -42,7 +45,7 @@ module UserAdminController
 
         let private userListIndex (ctx:HttpContext) =
             task {
-                let userListProjection = ctx.RequestServices.GetService<Projections.UserList.UserListProjection>()
+                let userListProjection = ctx.RequestServices.GetService<UserListProjection>()
                 let! users = userListProjection.GetUserList ()
 
                 let count = 
@@ -110,7 +113,7 @@ module UserAdminController
         
         let private userChangeNameIndex id (ctx:HttpContext)  =
             task {
-                let userService = ctx.RequestServices.GetService<Services.User.UserService>()
+                let userService = ctx.RequestServices.GetService<UserService>()
 
                 let! user = userService.GetUser id
                 match user with
@@ -126,7 +129,7 @@ module UserAdminController
 
         let private changeUserName id (ctx:HttpContext)  =
             task {
-                let userService = ctx.RequestServices.GetService<Services.User.UserService>()
+                let userService = ctx.RequestServices.GetService<UserService>()
                 let! model = Controller.getModel<UserChangeNameModel>(ctx)
                 if id <> model.UserId then
                     return Controller.renderHtml ctx (userFormError ctx "invalid user id!")
@@ -142,7 +145,7 @@ module UserAdminController
                         let errorMessage = convertErrorToString e
                         return Controller.renderHtml ctx (userFormError ctx errorMessage)
                     | Ok _ ->
-                        let userProjection = ctx.RequestServices.GetService<Projections.UserList.UserListProjection>()
+                        let userProjection = ctx.RequestServices.GetService<UserListProjection>()
                         userProjection.UpdateProjection ()
                         return Controller.renderHtml ctx (userFormSuccess ctx "the username was successfully changed.")
             }
@@ -158,7 +161,7 @@ module UserAdminController
         
         let private userChangeEMailIndex id (ctx:HttpContext)  =
             task {
-                let userService = ctx.RequestServices.GetService<Services.User.UserService>()
+                let userService = ctx.RequestServices.GetService<UserService>()
 
                 let! user = userService.GetUser id
                 match user with
@@ -174,7 +177,7 @@ module UserAdminController
 
         let private changeUserEMail id (ctx:HttpContext)  =
             task {
-                let userService = ctx.RequestServices.GetService<Services.User.UserService>()
+                let userService = ctx.RequestServices.GetService<UserService>()
                 
 
 
@@ -187,7 +190,7 @@ module UserAdminController
                             EMail = model.EMail
                         }
 
-                    let userProjection = ctx.RequestServices.GetService<Projections.UserList.UserListProjection>()
+                    let userProjection = ctx.RequestServices.GetService<UserListProjection>()
                     let! emailDuplicationValidator = createEMailDuplicateValidation userProjection
 
                     let! res = userService.ChangeEMail emailDuplicationValidator command
@@ -211,7 +214,7 @@ module UserAdminController
         
         let private userChangePasswordIndex id (ctx:HttpContext)  =
             task {
-                let userService = ctx.RequestServices.GetService<Services.User.UserService>()
+                let userService = ctx.RequestServices.GetService<UserService>()
 
                 let! user = userService.GetUser id
                 match user with
@@ -227,7 +230,7 @@ module UserAdminController
 
         let private changeUserPassword id (ctx:HttpContext)  =
             task {
-                let userService = ctx.RequestServices.GetService<Services.User.UserService>()
+                let userService = ctx.RequestServices.GetService<UserService>()
                 let! model = Controller.getModel<UserChangePasswordModel>(ctx)
                 if id <> model.UserId then
                     return Controller.renderHtml ctx (userFormError ctx "invalid user id!")
@@ -243,7 +246,7 @@ module UserAdminController
                         let errorMessage = convertErrorToString e
                         return Controller.renderHtml ctx (userFormError ctx errorMessage)
                     | Ok _ ->
-                        let userProjection = ctx.RequestServices.GetService<Projections.UserList.UserListProjection>()
+                        let userProjection = ctx.RequestServices.GetService<UserListProjection>()
                         userProjection.UpdateProjection ()
                         return Controller.renderHtml ctx (userFormSuccess ctx "the password was successfully changed.")
             }
@@ -259,7 +262,7 @@ module UserAdminController
         
         let private userAddToGroupIndex id (ctx:HttpContext)  =
             task {
-                let userService = ctx.RequestServices.GetService<Services.User.UserService>()
+                let userService = ctx.RequestServices.GetService<UserService>()
 
                 let! user = userService.GetUser id
                 match user with
@@ -275,7 +278,7 @@ module UserAdminController
 
         let private changeUserName id (ctx:HttpContext)  =
             task {
-                let userService = ctx.RequestServices.GetService<Services.User.UserService>()
+                let userService = ctx.RequestServices.GetService<UserService>()
                 let! model = Controller.getModel<UserAddToGroupModel>(ctx)
                 if id <> model.UserId then
                     return Controller.renderHtml ctx (userFormError ctx "invalid user id!")
@@ -291,7 +294,7 @@ module UserAdminController
                         let errorMessage = convertErrorToString e
                         return Controller.renderHtml ctx (userFormError ctx errorMessage)
                     | Ok _ ->
-                        let userProjection = ctx.RequestServices.GetService<Projections.UserList.UserListProjection>()
+                        let userProjection = ctx.RequestServices.GetService<UserListProjection>()
                         userProjection.UpdateProjection ()
                         return Controller.renderHtml ctx (userFormSuccess ctx "the user was added successfully to the group.")
             }
@@ -307,7 +310,7 @@ module UserAdminController
         
         let private userRemoveFromGroupIndex id (ctx:HttpContext)  =
             task {
-                let userService = ctx.RequestServices.GetService<Services.User.UserService>()
+                let userService = ctx.RequestServices.GetService<UserService>()
 
                 let! user = userService.GetUser id
                 match user with
@@ -324,7 +327,7 @@ module UserAdminController
 
         let private changeUserName id (ctx:HttpContext)  =
             task {
-                let userService = ctx.RequestServices.GetService<Services.User.UserService>()
+                let userService = ctx.RequestServices.GetService<UserService>()
                 let! model = Controller.getModel<UserRemoveFromGroupModel>(ctx)
                 if id <> model.UserId then
                     return Controller.renderHtml ctx (userFormError ctx "invalid user id!")
@@ -340,7 +343,7 @@ module UserAdminController
                         let errorMessage = convertErrorToString e
                         return Controller.renderHtml ctx (userFormError ctx errorMessage)
                     | Ok _ ->
-                        let userProjection = ctx.RequestServices.GetService<Projections.UserList.UserListProjection>()
+                        let userProjection = ctx.RequestServices.GetService<UserListProjection>()
                         userProjection.UpdateProjection ()
                         return Controller.renderHtml ctx (userFormSuccess ctx "the user was removed successfully from the group.")
             }
@@ -367,7 +370,7 @@ module UserAdminController
 
         let private createUser (ctx:HttpContext)  =
             task {
-                let userService = ctx.RequestServices.GetService<Services.User.UserService>()
+                let userService = ctx.RequestServices.GetService<UserService>()
                 let! model = Controller.getModel<UserCreateModel>(ctx)
 
                 let command:CommandArguments.CreateUser = {
@@ -377,7 +380,7 @@ module UserAdminController
                         Password = model.Password
                     }
 
-                let userProjection = ctx.RequestServices.GetService<Projections.UserList.UserListProjection>()
+                let userProjection = ctx.RequestServices.GetService<UserListProjection>()
                 let! emailDuplicationValidator = createEMailDuplicateValidation userProjection
 
                 let! res = userService.CreateUser emailDuplicationValidator command
@@ -401,7 +404,7 @@ module UserAdminController
         
         let private userDeleteIndex id (ctx:HttpContext)  =
             task {
-                let userService = ctx.RequestServices.GetService<Services.User.UserService>()
+                let userService = ctx.RequestServices.GetService<UserService>()
 
                 let! user = userService.GetUser id
                 match user with
@@ -416,7 +419,7 @@ module UserAdminController
 
         let private deleteUser id (ctx:HttpContext)  =
             task {
-                let userService = ctx.RequestServices.GetService<Services.User.UserService>()
+                let userService = ctx.RequestServices.GetService<UserService>()
                 let! model = Controller.getModel<UserDeleteModel>(ctx)
                 if id <> model.UserId then
                     return Controller.renderHtml ctx (userFormError ctx "invalid user id!")
@@ -431,7 +434,7 @@ module UserAdminController
                         let errorMessage = convertErrorToString e
                         return Controller.renderHtml ctx (userFormError ctx errorMessage)
                     | Ok _ ->
-                        let userProjection = ctx.RequestServices.GetService<Projections.UserList.UserListProjection>()
+                        let userProjection = ctx.RequestServices.GetService<UserListProjection>()
                         userProjection.UpdateProjection ()
                         return Controller.renderHtml ctx (userFormSuccess ctx "the username was successfully deleted.")
             }

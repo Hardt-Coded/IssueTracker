@@ -1,35 +1,39 @@
-﻿namespace Services
+﻿namespace Users
 
-module User =
+module Services =
     
     open System
     open System.Threading.Tasks
     open FSharp.Control.Tasks.V2    
-    open Domain.User
-    open Domain.Common
-    open Infrastructure.EventStore.User
+    open Users.Domain
+    open Common.Domain
+    open Users.EventStore
+    open Users.Dtos
+    open Users.Types
 
     let aggregateName =  "User"
 
+
+    type CheckEMailDuplication = string -> bool
     
 
     let private storeUserEvents (eventStore:UserEventStore) id events =
         task {
             let! versionResult =                     
                 events
-                |> List.map (fun i -> Dtos.User.Events.toDto i)
+                |> List.map (fun i -> Events.toDto i)
                 |> eventStore.StoreEvents id
             return versionResult
         }
 
 
-    let private create (eventStore:UserEventStore) (checkEMailDuplicate:string -> bool) (command:CommandArguments.CreateUser) = 
+    let private create (eventStore:UserEventStore) (checkEMailDuplicate:CheckEMailDuplication) (command:CommandArguments.CreateUser) = 
         task {
 
             if (checkEMailDuplicate command.EMail) then
                 return DomainError "email already in use" |> Error
             else
-                let events = aggregate.handle None (CreateUser command)
+                let events = aggregate.Handle None (CreateUser command)
                 match events with
                 | Ok events ->
                     return!
@@ -47,10 +51,10 @@ module User =
                 eventStore.ReadEvents command.UserId
 
             let user =
-                userEvents |> aggregate.exec None
+                userEvents |> aggregate.Exec None
             
             let newEvents =
-                aggregate.handle user (DeleteUser command)
+                aggregate.Handle user (DeleteUser command)
 
             match newEvents with 
             | Ok newEvents ->
@@ -62,7 +66,7 @@ module User =
         }
 
 
-    let changeEMail (eventStore:UserEventStore) (checkEMailDuplicate:string -> bool) (command:CommandArguments.ChangeEMail) =
+    let changeEMail (eventStore:UserEventStore) (checkEMailDuplicate:CheckEMailDuplication) (command:CommandArguments.ChangeEMail) =
         task {
 
             if (checkEMailDuplicate command.EMail) then
@@ -72,10 +76,10 @@ module User =
                     eventStore.ReadEvents command.UserId
             
                 let user =
-                    userEvents |> aggregate.exec None
+                    userEvents |> aggregate.Exec None
             
                 let newEvents =
-                    aggregate.handle user (ChangeEMail command)
+                    aggregate.Handle user (ChangeEMail command)
 
                 match newEvents with 
                 | Ok newEvents ->
@@ -94,10 +98,10 @@ module User =
                 eventStore.ReadEvents command.UserId
             
             let user =
-                userEvents |> aggregate.exec None
+                userEvents |> aggregate.Exec None
             
             let newEvents =
-                aggregate.handle user (ChangeName command)
+                aggregate.Handle user (ChangeName command)
 
             match newEvents with 
             | Ok newEvents ->
@@ -116,10 +120,10 @@ module User =
                 eventStore.ReadEvents command.UserId
             
             let user =
-                userEvents |> aggregate.exec None
+                userEvents |> aggregate.Exec None
             
             let newEvents =
-                aggregate.handle user (ChangePassword command)
+                aggregate.Handle user (ChangePassword command)
 
             match newEvents with 
             | Ok newEvents ->
@@ -138,10 +142,10 @@ module User =
                 eventStore.ReadEvents command.UserId
             
             let user =
-                userEvents |> aggregate.exec None
+                userEvents |> aggregate.Exec None
             
             let newEvents =
-                aggregate.handle user (AddToGroup command)
+                aggregate.Handle user (AddToGroup command)
 
             match newEvents with 
             | Ok newEvents ->
@@ -160,10 +164,10 @@ module User =
                 eventStore.ReadEvents command.UserId
             
             let user =
-                userEvents |> aggregate.exec None
+                userEvents |> aggregate.Exec None
             
             let newEvents =
-                aggregate.handle user (RemoveFromGroup command)
+                aggregate.Handle user (RemoveFromGroup command)
 
             match newEvents with 
             | Ok newEvents ->
@@ -178,24 +182,26 @@ module User =
     let get (eventStore:UserEventStore) id =
         task {
             let! events = eventStore.ReadEvents id
-            return events |> aggregate.exec None
+            return events |> aggregate.Exec None
         }
 
 
     let checkPassword user password =
-        Domain.Types.User.PasswordHash.isValid password user.PasswordHash
+        PasswordHash.isValid password user.PasswordHash
         
 
 
+    
+
     type UserService = {
         GetUser:string -> Task<State option>
-        CreateUser:(string -> bool)->CommandArguments.CreateUser->Task<Result<unit,Domain.Common.Errors>>
-        DeleteUser:CommandArguments.DeleteUser->Task<Result<unit,Domain.Common.Errors>>
-        ChangeEMail:(string -> bool)->CommandArguments.ChangeEMail->Task<Result<unit,Domain.Common.Errors>>
-        ChangeName:CommandArguments.ChangeName->Task<Result<unit,Domain.Common.Errors>>
-        ChangePassword:CommandArguments.ChangePassword->Task<Result<unit,Domain.Common.Errors>>
-        AddToGroup:CommandArguments.AddToGroup->Task<Result<unit,Domain.Common.Errors>>
-        RemoveFromGroup:CommandArguments.RemoveFromGroup->Task<Result<unit,Domain.Common.Errors>>
+        CreateUser: CheckEMailDuplication->CommandArguments.CreateUser->Task<Result<unit,Errors>>
+        DeleteUser:CommandArguments.DeleteUser->Task<Result<unit,Errors>>
+        ChangeEMail:CheckEMailDuplication->CommandArguments.ChangeEMail->Task<Result<unit,Errors>>
+        ChangeName:CommandArguments.ChangeName->Task<Result<unit,Errors>>
+        ChangePassword:CommandArguments.ChangePassword->Task<Result<unit,Errors>>
+        AddToGroup:CommandArguments.AddToGroup->Task<Result<unit,Errors>>
+        RemoveFromGroup:CommandArguments.RemoveFromGroup->Task<Result<unit,Errors>>
     }
 
 

@@ -1,10 +1,10 @@
-﻿namespace Domain.Types
+﻿namespace Common
 
 open System.Text.RegularExpressions
 
-module Common =
+module Types =
 
-    open Domain.Common
+    open Domain
 
     type EMail = private EMail of string
 

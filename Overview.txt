@@ -63,11 +63,28 @@ USerGroup Commands:
 Project Commands:
 
 	CreateNewProject
-	SetTitle
-	SetDescription
+	ChangeTitle
+	ChangeDescription
 	DisableProject
 	EnableProject
 	DeleteProject
+
+	Issue Commands:
+
+		CreateIssue
+		ChangeState
+		AssignToUser
+		ChangeTitle
+		ChangeDescription
+		DeleteIssue
+		AddComment
+		ChangeComment
+		DeleteComment
+		AddAttachment
+		RemoveAttachment
+
+
+
 	
 
 		

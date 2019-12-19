@@ -1,6 +1,6 @@
-﻿namespace Dtos
+﻿namespace Common
 
-module Common =
+module Dtos =
 
     type IEvent =
         abstract EventType: string

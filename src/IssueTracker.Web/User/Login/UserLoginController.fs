@@ -6,9 +6,12 @@
     open Microsoft.AspNetCore.Http
     open Microsoft.Extensions.DependencyInjection
     open UserLoginModel
-    open Projections.UserList
-    open Domain.Types.Common
-    open Domain.User
+    open Users.Projections.UserList
+    open Common.Types
+    open Users.Domain
+    open Users.Types
+    open Users.Services
+    open Common.Domain
     open System.Security.Claims
     open Microsoft.AspNetCore.Authentication
     open Saturn.ControllerHelpers
@@ -38,12 +41,12 @@
 
     let private login (ctx:HttpContext) =
         task {
-            let userListProjection = ctx.RequestServices.GetService<Projections.UserList.UserListProjection>()
-            let userService = ctx.RequestServices.GetService<Services.User.UserService>()
+            let userListProjection = ctx.RequestServices.GetService<UserListProjection>()
+            let userService = ctx.RequestServices.GetService<UserService>()
 
             let! model = Controller.getModel<UserLoginModel.Model>(ctx)
 
-            let! user = Projections.UserList.getUserByEmail userListProjection model.EMail
+            let! user = getUserByEmail userListProjection model.EMail
 
             match user with
             | None ->
@@ -54,7 +57,7 @@
                 return!
                     cUser 
                     |> Option.map (fun dUser ->
-                        if Services.User.checkPassword dUser model.Password then
+                        if checkPassword dUser model.Password then
                             let claimPrincipal = generateClaimPrincipal dUser
 
                             task {

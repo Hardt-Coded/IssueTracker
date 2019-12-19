@@ -1,12 +1,14 @@
-﻿namespace Projections
+﻿namespace Users.Projections
 
-open Infrastructure.EventStore.User
+
 
 module UserList =
 
-    open Infrastructure
-    open Domain.Types.Common
-    open Domain.Types.User
+    
+    open Common.Types
+    open Users.Types
+    open Users.Domain    
+    open Users.EventStore
         
 
     type State = {
@@ -29,10 +31,10 @@ module UserList =
     [<AutoOpen>]
     module private Helpers =
         
-        let entryProjector (state:State option) (events:(Domain.User.Event * int64) list) =
-            let applyEvent state (event:Domain.User.Event) (version:int64) =
+        let entryProjector (state:State option) (events:(Event * int64) list) =
+            let applyEvent state (event:Event) (version:int64) =
                 match state,event with
-                | None, Domain.User.Event.UserCreated ev ->
+                | None, UserCreated ev ->
                     let hPair = PasswordHash.value ev.PasswordHash
                     {
                         UserId = ev.UserId |> UserId.value
@@ -43,21 +45,21 @@ module UserList =
                         Groups=[]
                         Version = version
                     } |> Some
-                | Some _, Domain.User.Event.UserDeleted ev ->
+                | Some _, UserDeleted ev ->
                     None
-                | Some state, Domain.User.Event.EMailChanged ev ->
+                | Some state, EMailChanged ev ->
                     {
                         state with 
                             EMail = EMail.value ev.EMail
                             Version = version
                     } |> Some
-                | Some state, Domain.User.Event.NameChanged ev ->
+                | Some state, NameChanged ev ->
                     {
                         state with 
                             Name = NotEmptyString.value ev.Name
                             Version = version
                     } |> Some
-                | Some state, Domain.User.Event.PasswordChanged ev ->
+                | Some state, PasswordChanged ev ->
                     let hPair = PasswordHash.value ev.PasswordHash
                     {
                         state with 
@@ -65,14 +67,14 @@ module UserList =
                             PasswordSalt = hPair.Salt
                             Version = version
                     } |> Some
-                | Some state, Domain.User.Event.AddedToGroup ev ->
+                | Some state, AddedToGroup ev ->
                     let newGroup = ev.Group |> NotEmptyString.value
                     {
                         state with 
                             Groups = newGroup :: state.Groups
                             Version = version
                     } |> Some
-                | Some state, Domain.User.Event.RemovedFromGroup ev ->
+                | Some state, RemovedFromGroup ev ->
                     let group = ev.Group |> NotEmptyString.value
                     {
                         state with 
@@ -98,7 +100,7 @@ module UserList =
                 |> List.choose (fun currentState ->
                     let events = 
                         updateEvents 
-                        |> List.tryFind (fun (id,events:(Domain.User.Event * int64) list) -> id = currentState.UserId)
+                        |> List.tryFind (fun (id,events:(Event * int64) list) -> id = currentState.UserId)
                         
                     match events with
                     | None ->

@@ -1,4 +1,4 @@
-﻿namespace Projections
+﻿namespace Common.Projections
 
 module FileStorage =
 

@@ -1,13 +1,12 @@
-﻿namespace Domain.Tests.User
+﻿namespace Users.Tests.Domain
 
 open System
 open Xunit
 open Swensen.Unquote
-open Domain.Types.Common
-open Domain.Types.User
-open Domain.Common
-open Domain.User
-open Domain.User.CommandArguments
+open Users.Domain
+open Users.Types
+open Common.Types
+open Common.Domain
 
 module HandleTest =
     
@@ -16,12 +15,12 @@ module HandleTest =
     let ``create user should return a user created event if all is good`` () =
         let command = CreateUser {
             UserId = "myawesomeUser01"
-            CreateUser.EMail = "mymail@test.com"
+            EMail = "mymail@test.com"
             Name = "Daniel"
             Password = "secret"
         }
 
-        let result = aggregate.handle None command
+        let result = Users.Domain.aggregate.Handle None command
         
         match result, command with
         | Error e, _ ->

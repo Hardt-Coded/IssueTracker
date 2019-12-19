@@ -1,7 +1,6 @@
-﻿namespace Dtos
+﻿namespace Users
 
-module User =
-    
+module Dtos =
 
     module Commands =
 
@@ -49,7 +48,7 @@ module User =
 
     module Events =
     
-        open Common    
+        open Common.Dtos  
 
         [<CLIMutable>]
         type UserCreated = 
@@ -126,15 +125,15 @@ module User =
 
 
 
-        // open Domain.User
-        open Domain.Types.Common
-        open Domain.Types.User
+        open Common.Types
+        open Users.Types
+        open Users.Domain
 
         
 
         let inline toDto event : ^ev when ^ev : (member EventType:string) =
             match event with
-            | Domain.User.UserCreated e ->
+            | UserCreated e ->
                 let hashPair = PasswordHash.value e.PasswordHash
                 { 
                     UserCreated.UserId = UserId.value e.UserId
@@ -144,24 +143,24 @@ module User =
                     PasswordSalt = hashPair.Salt
                     EventType = "UserCreated"
                 } |> unbox
-            | Domain.User.UserDeleted e ->
+            | UserDeleted e ->
                 {
                     UserId = UserId.value e.UserId
                     EventType = "UserDeleted"
                 } |> unbox
-            | Domain.User.EMailChanged e ->
+            | EMailChanged e ->
                 {
                     UserId = UserId.value e.UserId
                     EMail = EMail.value e.EMail
                     EventType = "EMailChanged"
                 } |> unbox
-            | Domain.User.NameChanged e ->
+            | NameChanged e ->
                 {
                     UserId = UserId.value e.UserId
                     Name = NotEmptyString.value e.Name
                     EventType = "NameChanged"
                 } |> unbox
-            | Domain.User.PasswordChanged e ->
+            | PasswordChanged e ->
                 let hashPair = PasswordHash.value e.PasswordHash
                 {
                     UserId = UserId.value e.UserId
@@ -169,13 +168,13 @@ module User =
                     PasswordSalt = hashPair.Salt
                     EventType = "PasswordChanged"
                 } |> unbox
-            | Domain.User.AddedToGroup e ->
+            | AddedToGroup e ->
                 {
                     AddedToGroup.UserId = UserId.value e.UserId
                     Group = NotEmptyString.value e.Group
                     EventType = "AddedToGroup"
                 } |> unbox
-            | Domain.User.RemovedFromGroup e ->
+            | RemovedFromGroup e ->
                 {
                     RemovedFromGroup.UserId = UserId.value e.UserId
                     Group = NotEmptyString.value e.Group
@@ -188,55 +187,55 @@ module User =
         let toDomain (ev:obj) =
             match ev with
             | :? UserCreated as e ->
-                let result:Domain.User.EventArguments.UserCreated =
+                let result:EventArguments.UserCreated =
                     {
                         UserId = UserId.fromEventDto e.UserId
                         Name = NotEmptyString.fromEventDto e.Name
                         EMail = EMail.fromEventDto e.EMail
                         PasswordHash = PasswordHash.fromEventDto e.PasswordSalt e.PasswordHash
                     }
-                result |> Domain.User.UserCreated
+                result |> UserCreated
             | :? UserDeleted as e ->
                 {
-                    Domain.User.EventArguments.UserDeleted.UserId = UserId.fromEventDto e.UserId
+                    EventArguments.UserDeleted.UserId = UserId.fromEventDto e.UserId
                 }
-                |> Domain.User.UserDeleted
+                |> UserDeleted
 
             | :? EMailChanged as e ->
-                let result:Domain.User.EventArguments.EMailChanged =
+                let result:EventArguments.EMailChanged =
                     {
                         UserId = UserId.fromEventDto e.UserId
                         EMail = EMail.fromEventDto e.EMail
                     }
-                result |> Domain.User.EMailChanged
+                result |> EMailChanged
             | :? NameChanged as e ->
-                let result:Domain.User.EventArguments.NameChanged =
+                let result:EventArguments.NameChanged =
                     {
                         UserId = UserId.fromEventDto e.UserId
                         Name = NotEmptyString.fromEventDto e.Name
                     }
-                result |> Domain.User.NameChanged
+                result |> NameChanged
             | :? PasswordChanged as e ->
-                let result:Domain.User.EventArguments.PasswordChanged =
+                let result:EventArguments.PasswordChanged =
                     {
                         UserId = UserId.fromEventDto e.UserId
                         PasswordHash = PasswordHash.fromEventDto e.PasswordSalt e.PasswordHash
                     }
-                result |> Domain.User.PasswordChanged
+                result |> PasswordChanged
             | :? AddedToGroup as e ->
-                let result:Domain.User.EventArguments.AddedToGroup =
+                let result:EventArguments.AddedToGroup =
                     {
                         UserId = UserId.fromEventDto e.UserId
                         Group = NotEmptyString.fromEventDto e.Group
                     }
-                result |> Domain.User.AddedToGroup
+                result |> AddedToGroup
             | :? RemovedFromGroup as e ->
-                let result:Domain.User.EventArguments.RemovedFromGroup =
+                let result:EventArguments.RemovedFromGroup =
                     {
                         UserId = UserId.fromEventDto e.UserId
                         Group = NotEmptyString.fromEventDto e.Group
                     }
-                result |> Domain.User.RemovedFromGroup
+                result |> RemovedFromGroup
             | _ ->
                 let t = ev.GetType().Name
                 failwith (sprintf "invalid type '%s' for an event dto" t)

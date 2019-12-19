@@ -1,15 +1,11 @@
-﻿namespace Domain
+﻿namespace Users
 
+module Domain =
 
-//open Result
-open Types.Common
-open Types.User
-open System
-open Common
-
-module User =
-
-    open Common
+    open Common.Types
+    open Users.Types
+    open Common.Domain
+    
 
     type State = {
         UserId:UserId
@@ -265,14 +261,14 @@ module User =
             
 
 
-    let private exec = Common.exec apply
-    let private execWithVersion = Common.execWithEvents apply
+    let private exec = exec apply
+    let private execWithVersion = execWithEvents apply
 
     let aggregate : Aggregate<_,_,_,Errors> = {
-        apply = apply
-        handle = handle
-        exec = exec
-        execWithVersion = execWithVersion
+        Apply = apply
+        Handle = handle
+        Exec = exec
+        ExecWithVersion = execWithVersion
     }
             
 

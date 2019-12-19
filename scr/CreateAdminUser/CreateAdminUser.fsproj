@@ -10,12 +10,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Terminal.Gui.Elmish" Version="0.1.6" />
+    <PackageReference Include="TaskBuilder.fs" Version="2.1.0" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Common\Common.fsproj" />
-    <ProjectReference Include="..\Users\Users.fsproj" />
+    <ProjectReference Include="..\..\src\Users\Users.fsproj" />
   </ItemGroup>
 
 </Project>

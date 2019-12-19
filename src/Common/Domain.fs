@@ -1,6 +1,6 @@
-﻿namespace Domain
+﻿namespace Common
 
-module Common =
+module Domain =
 
     type Errors =
         | DomainError of string
@@ -9,10 +9,10 @@ module Common =
     
 
     type Aggregate<'state,'command,'event, 'error> = {
-        handle: 'state option -> 'command -> Result<'event list,Errors>
-        apply: 'state option -> 'event -> 'state option
-        exec: 'state option -> Result<('event * int64) list,'error> -> 'state option
-        execWithVersion: 'state option -> Result<('event * int64) list,'error> -> ('state * int64) option
+        Handle: 'state option -> 'command -> Result<'event list,Errors>
+        Apply: 'state option -> 'event -> 'state option
+        Exec: 'state option -> Result<('event * int64) list,'error> -> 'state option
+        ExecWithVersion: 'state option -> Result<('event * int64) list,'error> -> ('state * int64) option
     }
 
 

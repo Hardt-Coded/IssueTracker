@@ -1,10 +1,18 @@
 ﻿// Learn more about F# at http://fsharp.org
-open Domain.Common
+open Common.Domain
 open FSharp.Control.Tasks
 open Terminal.Gui.Elmish
-open Projections.UserList
-open Domain.Types.Common
+open Users.Projections.UserList
+open Common.Types
+open Users.Types
+open Common.Projections
+open Common.Infrastructure
+open Users.EventStore
 open System
+open Users.Domain
+open Users.Services
+open Users.Projections
+
 
 
 // init stuff
@@ -15,12 +23,12 @@ let eventStoreConnection = "UseDevelopmentStorage=true;"
 let tableName = "IssueTrackerEventSource"
 let ulpStorageFileName = "userlist.json"
 
-let private getEventStore = Infrastructure.EventStore.eventStore tableName eventStoreConnection
+let private getEventStore = EventStore.eventStore tableName eventStoreConnection
 
 
 
 let private userEventStore =
-    Infrastructure.EventStore.User.createUserEventStore getEventStore "User"
+    createUserEventStore getEventStore "User"
     
 
 let printError e =
@@ -33,11 +41,11 @@ let printError e =
 let userListProjection = 
     UserListProjection(userEventStore,
         printError,
-        (fun () -> async { return Projections.FileStorage.loadProjection ulpStorageFileName }),
-        (fun list -> async { return Projections.FileStorage.storeProjection ulpStorageFileName list })
+        (fun () -> async { return FileStorage.loadProjection ulpStorageFileName }),
+        (fun list -> async { return FileStorage.storeProjection ulpStorageFileName list })
     )
 
-let userService = Services.User.createUserService userEventStore 
+let userService = createUserService userEventStore 
 
 
 
@@ -68,9 +76,9 @@ type Form =
     | NoForm
 
 type Model = {
-    Users:Projections.UserList.State list
+    Users:UserList.State list
     UserId:string
-    CurrentUser: Projections.UserList.State option
+    CurrentUser: UserList.State option
 
     NewUserData:UserFormData
     Form:Form
@@ -81,7 +89,7 @@ type Model = {
 
 type Msg = 
     | LoadUsers
-    | UsersLoaded of State list 
+    | UsersLoaded of UserList.State list 
     | ChangeSelectedUser of string
 
     | StartChangeEMail
@@ -107,7 +115,7 @@ type Msg =
     | CancelForm
     | Successfull
 
-    | OnError of Domain.Common.Errors
+    | OnError of Errors
 
     | Nothing
 
@@ -181,7 +189,7 @@ let update msg model =
     | ChangeEMail email->
         let changeEmailCmd =
             task {
-                let command:Domain.User.CommandArguments.ChangeEMail = {
+                let command:CommandArguments.ChangeEMail = {
                     UserId = model.UserId
                     EMail = email
                 }
@@ -203,7 +211,7 @@ let update msg model =
     | ChangeName name->
         let changeNameCmd =
             task {
-                let command:Domain.User.CommandArguments.ChangeName = {
+                let command:CommandArguments.ChangeName = {
                     UserId = model.UserId
                     Name = name
                 }
@@ -219,7 +227,7 @@ let update msg model =
     | ChangePassword pw ->
         let changePaswordCmd =
             task {
-                let command:Domain.User.CommandArguments.ChangePassword = {
+                let command:CommandArguments.ChangePassword = {
                     UserId = model.UserId
                     Password = pw
                 }
@@ -234,7 +242,7 @@ let update msg model =
     | AddToGroup group ->
         let addToGroupCmd =
             task {
-                let command:Domain.User.CommandArguments.AddToGroup = {
+                let command:CommandArguments.AddToGroup = {
                     UserId = model.UserId
                     Group = group
                 }
@@ -249,7 +257,7 @@ let update msg model =
     | RemoveFromGroup group ->
         let addToGroupCmd =
             task {
-                let command:Domain.User.CommandArguments.RemoveFromGroup = {
+                let command:CommandArguments.RemoveFromGroup = {
                     UserId = model.UserId
                     Group = group
                 }
@@ -297,7 +305,7 @@ let update msg model =
 open System 
 
 
-let userToListItem user =
+let userToListItem (user:UserList.State) =
     let groups = String.Join(",",user.Groups)
     user.UserId, sprintf "%s - %s - %s - %s (%i) - %s" user.UserId user.Name user.EMail groups user.Version (user.PasswordHash.[1..8])
 
