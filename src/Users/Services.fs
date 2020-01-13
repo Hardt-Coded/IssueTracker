@@ -194,7 +194,7 @@ module Services =
     
 
     type UserService = {
-        GetUser:string -> Task<State option>
+        GetUser:string -> Task<User option>
         CreateUser: CheckEMailDuplication->CommandArguments.CreateUser->Task<Result<unit,Errors>>
         DeleteUser:CommandArguments.DeleteUser->Task<Result<unit,Errors>>
         ChangeEMail:CheckEMailDuplication->CommandArguments.ChangeEMail->Task<Result<unit,Errors>>

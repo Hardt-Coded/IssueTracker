@@ -7,12 +7,12 @@ module Domain =
     open Common.Domain
     
 
-    type State = {
+    type User = {
         UserId:UserId
-        Name:NotEmptyString
+        Name:NoneEmptyString
         EMail:EMail
         PasswordHash:PasswordHash
-        Groups: NotEmptyString list
+        Groups: NoneEmptyString list
     }
 
 
@@ -69,7 +69,7 @@ module Domain =
 
         type UserCreated = {
             UserId:UserId
-            Name:NotEmptyString
+            Name:NoneEmptyString
             EMail:EMail
             PasswordHash:PasswordHash
         }
@@ -85,7 +85,7 @@ module Domain =
 
         type NameChanged = {
             UserId:UserId
-            Name:NotEmptyString
+            Name:NoneEmptyString
         }
 
         type PasswordChanged = {
@@ -95,12 +95,12 @@ module Domain =
 
         type AddedToGroup = {
             UserId:UserId
-            Group:NotEmptyString
+            Group:NoneEmptyString
         }
 
         type RemovedFromGroup = {
             UserId:UserId
-            Group:NotEmptyString
+            Group:NoneEmptyString
         }
 
 
@@ -116,7 +116,7 @@ module Domain =
         
 
 
-    let rec private handle (state:State option) command : Result<Event list,Errors> =
+    let rec private handle (state:User option) command : Result<Event list,Errors> =
         match state,command with
         | None, CreateUser args ->
             userCreated args
@@ -144,7 +144,7 @@ module Domain =
 
     and userCreated args =
         result {
-            let! name = NotEmptyString.create "Name" args.Name
+            let! name = NoneEmptyString.create "Name" args.Name
             let! email = EMail.create args.EMail
             let! passwordHash = PasswordHash.create args.Password
             let! userId = UserId.create args.UserId
@@ -176,7 +176,7 @@ module Domain =
     and nameChanged args =
         result {
             let! userId = UserId.create args.UserId
-            let! name = NotEmptyString.create "Name" args.Name
+            let! name = NoneEmptyString.create "Name" args.Name
             return [ NameChanged { UserId = userId; Name = name } ]
         }
 
@@ -192,7 +192,7 @@ module Domain =
     and addedToGroup state args =
         result {
             let! userId = UserId.create args.UserId
-            let! group = NotEmptyString.create "Group" args.Group
+            let! group = NoneEmptyString.create "Group" args.Group
             if (state.Groups |> List.exists (fun i -> i = group)) then
                 return! 
                     sprintf "user already assigned to group %s" args.Group
@@ -206,7 +206,7 @@ module Domain =
     and removedFromGroup state args =
         result {
             let! userId = UserId.create args.UserId
-            let! group = NotEmptyString.create "Group" args.Group
+            let! group = NoneEmptyString.create "Group" args.Group
             if (state.Groups |> List.exists (fun i -> i = group)) then
                 return [ RemovedFromGroup { UserId = userId; Group = group } ]
             else
@@ -217,7 +217,7 @@ module Domain =
         }
                 
        
-    let private apply (state:State option) event : State option =
+    let private apply (state:User option) event : User option =
         match state, event with
         | None, UserCreated args ->
             { 

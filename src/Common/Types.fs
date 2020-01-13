@@ -8,7 +8,7 @@ module Types =
 
     type EMail = private EMail of string
 
-    type NotEmptyString = private NotEmptyString of string
+    type NoneEmptyString = private NoneEmptyString of string
 
 
 
@@ -38,7 +38,7 @@ module Types =
         let fromEventDto email = EMail email
 
 
-    module NotEmptyString =
+    module NoneEmptyString =
 
         open System
 
@@ -48,14 +48,14 @@ module Types =
                 |> DomainError
                 |> Error
             else
-                NotEmptyString notEmptyStr |> Ok
+                NoneEmptyString notEmptyStr |> Ok
 
 
-        let value (NotEmptyString str) = str
+        let value (NoneEmptyString str) = str
 
         
         /// use only for event dto convertion
-        let fromEventDto str = NotEmptyString str
+        let fromEventDto str = NoneEmptyString str
                 
             
         

@@ -138,7 +138,7 @@ module Dtos =
                 { 
                     UserCreated.UserId = UserId.value e.UserId
                     EMail = EMail.value e.EMail
-                    Name = NotEmptyString.value e.Name
+                    Name = NoneEmptyString.value e.Name
                     PasswordHash = hashPair.Hash
                     PasswordSalt = hashPair.Salt
                     EventType = "UserCreated"
@@ -157,7 +157,7 @@ module Dtos =
             | NameChanged e ->
                 {
                     UserId = UserId.value e.UserId
-                    Name = NotEmptyString.value e.Name
+                    Name = NoneEmptyString.value e.Name
                     EventType = "NameChanged"
                 } |> unbox
             | PasswordChanged e ->
@@ -171,13 +171,13 @@ module Dtos =
             | AddedToGroup e ->
                 {
                     AddedToGroup.UserId = UserId.value e.UserId
-                    Group = NotEmptyString.value e.Group
+                    Group = NoneEmptyString.value e.Group
                     EventType = "AddedToGroup"
                 } |> unbox
             | RemovedFromGroup e ->
                 {
                     RemovedFromGroup.UserId = UserId.value e.UserId
-                    Group = NotEmptyString.value e.Group
+                    Group = NoneEmptyString.value e.Group
                     EventType = "RemovedFromGroup"
                 } |> unbox
     
@@ -190,7 +190,7 @@ module Dtos =
                 let result:EventArguments.UserCreated =
                     {
                         UserId = UserId.fromEventDto e.UserId
-                        Name = NotEmptyString.fromEventDto e.Name
+                        Name = NoneEmptyString.fromEventDto e.Name
                         EMail = EMail.fromEventDto e.EMail
                         PasswordHash = PasswordHash.fromEventDto e.PasswordSalt e.PasswordHash
                     }
@@ -212,7 +212,7 @@ module Dtos =
                 let result:EventArguments.NameChanged =
                     {
                         UserId = UserId.fromEventDto e.UserId
-                        Name = NotEmptyString.fromEventDto e.Name
+                        Name = NoneEmptyString.fromEventDto e.Name
                     }
                 result |> NameChanged
             | :? PasswordChanged as e ->
@@ -226,14 +226,14 @@ module Dtos =
                 let result:EventArguments.AddedToGroup =
                     {
                         UserId = UserId.fromEventDto e.UserId
-                        Group = NotEmptyString.fromEventDto e.Group
+                        Group = NoneEmptyString.fromEventDto e.Group
                     }
                 result |> AddedToGroup
             | :? RemovedFromGroup as e ->
                 let result:EventArguments.RemovedFromGroup =
                     {
                         UserId = UserId.fromEventDto e.UserId
-                        Group = NotEmptyString.fromEventDto e.Group
+                        Group = NoneEmptyString.fromEventDto e.Group
                     }
                 result |> RemovedFromGroup
             | _ ->

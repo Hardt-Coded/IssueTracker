@@ -122,7 +122,7 @@ module UserAdminController
                 | Some user ->
                     let userChangeNameModel:UserChangeNameModel = {
                         UserId = UserId.value user.UserId
-                        Name = NotEmptyString.value user.Name
+                        Name = NoneEmptyString.value user.Name
                     }
                     return Controller.renderHtml ctx (UserChangeNamePage.userChangeNameLayout ctx userChangeNameModel)
             }
@@ -319,7 +319,7 @@ module UserAdminController
                 | Some user ->
                     let userRemoveFromGroupModel:UserRemoveFromGroupModel = {
                         UserId = UserId.value user.UserId
-                        CurrentGroups = user.Groups |> List.map NotEmptyString.value
+                        CurrentGroups = user.Groups |> List.map NoneEmptyString.value
                         Group = ""
                     }
                     return Controller.renderHtml ctx (UserRemoveFromGroupPage.userRemoveFromGroupLayout ctx userRemoveFromGroupModel)

@@ -37,7 +37,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Saturn" Version="0.10.0" />
+    <PackageReference Include="Saturn" Version="0.10.1" />
     <PackageReference Include="Microsoft.NETCore.Targets" Version="3.0.0" PrivateAssets="all" />
   </ItemGroup>
 
