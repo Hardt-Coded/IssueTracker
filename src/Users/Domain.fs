@@ -9,10 +9,10 @@ module Domain =
 
     type State = {
         UserId:UserId
-        Name:NotEmptyString
+        Name:NoneEmptyString
         EMail:EMail
         PasswordHash:PasswordHash
-        Groups: NotEmptyString list
+        Groups: NoneEmptyString list
     }
 
 
@@ -69,7 +69,7 @@ module Domain =
 
         type UserCreated = {
             UserId:UserId
-            Name:NotEmptyString
+            Name:NoneEmptyString
             EMail:EMail
             PasswordHash:PasswordHash
         }
@@ -85,7 +85,7 @@ module Domain =
 
         type NameChanged = {
             UserId:UserId
-            Name:NotEmptyString
+            Name:NoneEmptyString
         }
 
         type PasswordChanged = {
@@ -95,12 +95,12 @@ module Domain =
 
         type AddedToGroup = {
             UserId:UserId
-            Group:NotEmptyString
+            Group:NoneEmptyString
         }
 
         type RemovedFromGroup = {
             UserId:UserId
-            Group:NotEmptyString
+            Group:NoneEmptyString
         }
 
 
@@ -159,7 +159,7 @@ module Domain =
                 }
             ]
 
-        let name = NotEmptyString.create "Name" args.Name
+        let name = NoneEmptyString.create "Name" args.Name
         let email = EMail.create args.EMail
         let passwordHash = PasswordHash.create args.Password
         let userId = UserId.create args.UserId
@@ -188,7 +188,7 @@ module Domain =
         let create userId name = [ NameChanged { UserId = userId; Name = name } ]
 
         let userId = UserId.create args.UserId
-        let name = NotEmptyString.create "Name" args.Name
+        let name = NoneEmptyString.create "Name" args.Name
         create <!> userId <*> name
         
 
@@ -206,7 +206,7 @@ module Domain =
         let create userId group = [ AddedToGroup { UserId = userId; Group = group } ]
 
         let userId = UserId.create args.UserId
-        let group = NotEmptyString.create "Group" args.Group
+        let group = NoneEmptyString.create "Group" args.Group
 
         if (state.Groups |> List.map Ok |> List.exists (fun i -> i = group)) then
             sprintf "user already assigned to group %s" args.Group
@@ -222,7 +222,7 @@ module Domain =
         let create userId group = [ RemovedFromGroup { UserId = userId; Group = group } ]
 
         let userId = UserId.create args.UserId
-        let group = NotEmptyString.create "Group" args.Group
+        let group = NoneEmptyString.create "Group" args.Group
 
         if (state.Groups |> List.map Ok |> List.exists (fun i -> i = group)) then
             create <!> userId <*> group
