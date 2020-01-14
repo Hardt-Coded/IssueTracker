@@ -27,7 +27,7 @@ module HandleTest =
             failwith (sprintf "test error: %A" e)
         | Ok [ UserCreated result ], CreateUser command ->
             test <@ String.IsNullOrEmpty(UserId.value result.UserId) |> not @>
-            test <@ (NotEmptyString.value result.Name) = command.Name @>
+            test <@ (NoneEmptyString.value result.Name) = command.Name @>
             test <@ (EMail.value result.EMail) = command.EMail @>
             test <@ PasswordHash.isValid command.Password result.PasswordHash @>
             // the password hash must check on a seperate way

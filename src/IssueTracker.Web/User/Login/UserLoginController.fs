@@ -24,14 +24,14 @@
 
 
     let private generateClaimPrincipal user =
-        let name = NotEmptyString.value user.Name
+        let name = NoneEmptyString.value user.Name
         let email = EMail.value user.EMail
 
         let userClaim = Claim(ClaimTypes.Name,name)
         let emailClaim = Claim(ClaimTypes.Email,email)
         let roleClaims =
             user.Groups
-            |> List.map (fun i -> NotEmptyString.value i)
+            |> List.map (fun i -> NoneEmptyString.value i)
             |> List.map (fun group -> new Claim(ClaimTypes.Role,group))
         let claims = roleClaims @ [ userClaim; emailClaim ]
 

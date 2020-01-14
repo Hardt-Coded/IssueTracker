@@ -38,7 +38,7 @@ module UserList =
                     let hPair = PasswordHash.value ev.PasswordHash
                     {
                         UserId = ev.UserId |> UserId.value
-                        Name= ev.Name |> NotEmptyString.value
+                        Name= ev.Name |> NoneEmptyString.value
                         EMail=ev.EMail |> EMail.value
                         PasswordHash = hPair.Hash
                         PasswordSalt = hPair.Salt
@@ -56,7 +56,7 @@ module UserList =
                 | Some state, NameChanged ev ->
                     {
                         state with 
-                            Name = NotEmptyString.value ev.Name
+                            Name = NoneEmptyString.value ev.Name
                             Version = version
                     } |> Some
                 | Some state, PasswordChanged ev ->
@@ -68,14 +68,14 @@ module UserList =
                             Version = version
                     } |> Some
                 | Some state, AddedToGroup ev ->
-                    let newGroup = ev.Group |> NotEmptyString.value
+                    let newGroup = ev.Group |> NoneEmptyString.value
                     {
                         state with 
                             Groups = newGroup :: state.Groups
                             Version = version
                     } |> Some
                 | Some state, RemovedFromGroup ev ->
-                    let group = ev.Group |> NotEmptyString.value
+                    let group = ev.Group |> NoneEmptyString.value
                     {
                         state with 
                             Groups = state.Groups |> List.filter (fun i -> i<>group)

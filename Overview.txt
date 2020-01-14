@@ -30,6 +30,7 @@ Entities Detail:
 	Project
 		Title and Description
 		"Issues"
+		Current State: Active, Done, Inactive
 		
 	Issue
 		Title and Description
@@ -65,8 +66,7 @@ Project Commands:
 	CreateNewProject
 	ChangeTitle
 	ChangeDescription
-	DisableProject
-	EnableProject
+	ChangeState	
 	DeleteProject
 
 	Issue Commands:
