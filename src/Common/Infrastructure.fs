@@ -92,7 +92,11 @@ module Infrastructure =
                     return () |> Ok
                 with
                 | _ as e ->
-                    return e |> InfrastructureError |> Error
+                    return 
+                        e 
+                        |> InfrastructureError 
+                        |> List.singleton 
+                        |> Error
             }
 
 
@@ -110,7 +114,11 @@ module Infrastructure =
                     return events |> Ok
                 with
                 | _ as e ->
-                    return e |> InfrastructureError |> Error
+                    return 
+                        e 
+                        |> InfrastructureError 
+                        |> List.singleton
+                        |> Error
                 
             }
 
@@ -128,7 +136,11 @@ module Infrastructure =
                     return events |> Ok
                 with
                 | _ as e ->
-                    return e |> InfrastructureError |> Error
+                    return 
+                        e 
+                        |> InfrastructureError 
+                        |> List.singleton
+                        |> Error
                 
             }
 
@@ -141,7 +153,11 @@ module Infrastructure =
                     return streams |> Ok
                 with
                 | _ as e ->
-                    return e |> InfrastructureError |> Error
+                    return 
+                        e 
+                        |> InfrastructureError 
+                        |> List.singleton
+                        |> Error
         
             }
 

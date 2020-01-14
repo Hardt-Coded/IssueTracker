@@ -53,7 +53,6 @@ module Dtos =
         [<CLIMutable>]
         type UserCreated = 
             {
-                EventType:string
                 UserId:string
                 Name:string
                 EMail:string
@@ -62,66 +61,67 @@ module Dtos =
             } 
             interface IEvent with
                 member this.EventType = this.EventType
+            member this.EventType = "UserCreated"
             
 
         [<CLIMutable>]
         type UserDeleted = 
             {
-                EventType:string
                 UserId:string
             } 
             interface IEvent with
                 member this.EventType = this.EventType
+            member this.EventType = "UserDeleted"
 
         type EMailChanged = 
             {
-                EventType:string
                 UserId:string
                 EMail:string
             }
             interface IEvent with
                 member this.EventType = this.EventType
+            member this.EventType = "EMailChanged"
 
 
         type NameChanged = 
             {
-                EventType:string
                 UserId:string
                 Name:string
             }
             interface IEvent with
                 member this.EventType = this.EventType
+            member this.EventType = "NameChanged"
 
         [<CLIMutable>]
         type PasswordChanged = 
             {
-                EventType:string
                 UserId:string
                 PasswordHash:string
                 PasswordSalt:string
             }
             interface IEvent with
                 member this.EventType = this.EventType
+            member this.EventType = "PasswordChanged"
 
         [<CLIMutable>]
         type AddedToGroup = 
             {
-                EventType:string
                 UserId:string
                 Group:string
             }
             interface IEvent with
                 member this.EventType = this.EventType
+            member this.EventType = "AddedToGroup"
 
         [<CLIMutable>]
         type RemovedFromGroup = 
             {
-                EventType:string
                 UserId:string
                 Group:string
             }
             interface IEvent with
                 member this.EventType = this.EventType
+            member this.EventType = "RemovedFromGroup"
 
 
 
@@ -141,24 +141,21 @@ module Dtos =
                     Name = NotEmptyString.value e.Name
                     PasswordHash = hashPair.Hash
                     PasswordSalt = hashPair.Salt
-                    EventType = "UserCreated"
+                    
                 } |> unbox
             | UserDeleted e ->
                 {
                     UserId = UserId.value e.UserId
-                    EventType = "UserDeleted"
                 } |> unbox
             | EMailChanged e ->
                 {
                     UserId = UserId.value e.UserId
                     EMail = EMail.value e.EMail
-                    EventType = "EMailChanged"
                 } |> unbox
             | NameChanged e ->
                 {
                     UserId = UserId.value e.UserId
                     Name = NotEmptyString.value e.Name
-                    EventType = "NameChanged"
                 } |> unbox
             | PasswordChanged e ->
                 let hashPair = PasswordHash.value e.PasswordHash
@@ -166,19 +163,16 @@ module Dtos =
                     UserId = UserId.value e.UserId
                     PasswordHash = hashPair.Hash
                     PasswordSalt = hashPair.Salt
-                    EventType = "PasswordChanged"
                 } |> unbox
             | AddedToGroup e ->
                 {
                     AddedToGroup.UserId = UserId.value e.UserId
                     Group = NotEmptyString.value e.Group
-                    EventType = "AddedToGroup"
                 } |> unbox
             | RemovedFromGroup e ->
                 {
                     RemovedFromGroup.UserId = UserId.value e.UserId
                     Group = NotEmptyString.value e.Group
-                    EventType = "RemovedFromGroup"
                 } |> unbox
     
        

@@ -116,13 +116,18 @@ module Domain =
         
 
 
-    let rec private handle (state:State option) command : Result<Event list,Errors> =
+    let (<*>) = Validation.apply 
+    let (<!>) = Result.map
+
+
+    let rec private handle (state:State option) command : Result<Event list,Errors list> =
         match state,command with
         | None, CreateUser args ->
             userCreated args
         | Some _, CreateUser _ ->
             "you can not have a create user event, when a user alread existis"
             |> DomainError
+            |> List.singleton
             |> Error
         | Some state, DeleteUser args ->
             userDeleted args
@@ -139,82 +144,94 @@ module Domain =
         | None, _ ->
             "user does not exists"
             |> DomainError
+            |> List.singleton
             |> Error
 
 
     and userCreated args =
-        result {
-            let! name = NotEmptyString.create "Name" args.Name
-            let! email = EMail.create args.EMail
-            let! passwordHash = PasswordHash.create args.Password
-            let! userId = UserId.create args.UserId
-            let userCreated : EventArguments.UserCreated = {
-                UserId = userId
-                Name = name
-                EMail = email
-                PasswordHash = passwordHash
-            }
-            return [ UserCreated userCreated ]
-        }
+        let create userId name email passwordHash = 
+            [
+                UserCreated {
+                    UserId = userId
+                    Name = name
+                    EMail = email
+                    PasswordHash = passwordHash
+                }
+            ]
+
+        let name = NotEmptyString.create "Name" args.Name
+        let email = EMail.create args.EMail
+        let passwordHash = PasswordHash.create args.Password
+        let userId = UserId.create args.UserId
+        create <!> userId <*> name <*> email <*> passwordHash
+        
 
 
     and userDeleted args =
-        result {
-            let! userId = UserId.create args.UserId
-            return [ UserDeleted { UserId = userId} ]
-        }
+        let create userId = [ UserDeleted { UserId = userId } ]
+        let userId = UserId.create args.UserId
+        create <!> userId
+
+        
 
 
     and emailChanged args =
-        result {
-            let! userId = UserId.create args.UserId
-            let! email = EMail.create args.EMail
-            return [ EMailChanged { UserId = userId; EMail = email } ]
-        }
+        let create userId email = [ EMailChanged { UserId = userId; EMail = email } ]
+
+        let userId = UserId.create args.UserId
+        let email = EMail.create args.EMail
+        create <!> userId <*> email
+        
 
 
     and nameChanged args =
-        result {
-            let! userId = UserId.create args.UserId
-            let! name = NotEmptyString.create "Name" args.Name
-            return [ NameChanged { UserId = userId; Name = name } ]
-        }
+        let create userId name = [ NameChanged { UserId = userId; Name = name } ]
+
+        let userId = UserId.create args.UserId
+        let name = NotEmptyString.create "Name" args.Name
+        create <!> userId <*> name
+        
 
 
     and changePassword args =
-        result {
-            let! userId = UserId.create args.UserId
-            let! passwordHash = PasswordHash.create args.Password
-            return [ PasswordChanged { UserId = userId; PasswordHash = passwordHash } ]
-        }
+        let create userId passwordHash = [ PasswordChanged { UserId = userId; PasswordHash = passwordHash } ]
+        
+        let userId = UserId.create args.UserId
+        let passwordHash = PasswordHash.create args.Password
+        create <!> userId <*> passwordHash
+        
 
 
     and addedToGroup state args =
-        result {
-            let! userId = UserId.create args.UserId
-            let! group = NotEmptyString.create "Group" args.Group
-            if (state.Groups |> List.exists (fun i -> i = group)) then
-                return! 
-                    sprintf "user already assigned to group %s" args.Group
-                    |> DomainError
-                    |> Error
-            else
-                return [ AddedToGroup { UserId = userId; Group = group } ]
-        }
+        let create userId group = [ AddedToGroup { UserId = userId; Group = group } ]
+
+        let userId = UserId.create args.UserId
+        let group = NotEmptyString.create "Group" args.Group
+
+        if (state.Groups |> List.map Ok |> List.exists (fun i -> i = group)) then
+            sprintf "user already assigned to group %s" args.Group
+            |> DomainError
+            |> List.singleton
+            |> Error
+        else
+            create <!> userId <*> group
+        
 
 
     and removedFromGroup state args =
-        result {
-            let! userId = UserId.create args.UserId
-            let! group = NotEmptyString.create "Group" args.Group
-            if (state.Groups |> List.exists (fun i -> i = group)) then
-                return [ RemovedFromGroup { UserId = userId; Group = group } ]
-            else
-                return! 
-                    sprintf "user is not member of the group %s" args.Group
-                    |> DomainError
-                    |> Error
-        }
+        let create userId group = [ RemovedFromGroup { UserId = userId; Group = group } ]
+
+        let userId = UserId.create args.UserId
+        let group = NotEmptyString.create "Group" args.Group
+
+        if (state.Groups |> List.map Ok |> List.exists (fun i -> i = group)) then
+            create <!> userId <*> group
+        else
+            sprintf "user is not member of the group %s" args.Group
+            |> DomainError
+            |> List.singleton
+            |> Error
+
                 
        
     let private apply (state:State option) event : State option =
@@ -264,7 +281,7 @@ module Domain =
     let private exec = exec apply
     let private execWithVersion = execWithEvents apply
 
-    let aggregate : Aggregate<_,_,_,Errors> = {
+    let aggregate : Aggregate<_,_,_,Errors list> = {
         Apply = apply
         Handle = handle
         Exec = exec

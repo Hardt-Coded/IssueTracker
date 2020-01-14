@@ -22,6 +22,7 @@ module Types =
             if String.IsNullOrWhiteSpace(userId) then
                 sprintf "user id must not be empty" 
                 |> DomainError
+                |> List.singleton
                 |> Error
             else
                 UserId userId |> Ok
@@ -43,6 +44,7 @@ module Types =
             if String.IsNullOrEmpty(password) then
                 "password must not be empty" 
                 |> DomainError
+                |> List.singleton
                 |> Error
             else
                 let salt = Array.zeroCreate 16

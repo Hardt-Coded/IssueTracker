@@ -79,7 +79,7 @@
                         div [ _class "message-body" ] [
                             div [ _class "content" ] [
                                            
-                                str text
+                                rawText text
 
                             ]
                             div [ _class "buttons is-right" ] [
@@ -654,7 +654,10 @@
            let private userCreateView (ctx:HttpContext) (model:UserCreateModel) =
                [
                    userFormCard ctx "Create User" [
-                       form [ _method "POST" ] [
+                       form [ 
+                           _method "POST" 
+                           _autocomplete "off"
+                       ] [
                            
                            div [ _class "field" ] [ 
                                label [ _class "label" ] [ 
@@ -664,6 +667,7 @@
                                    input [ _class "input"
                                            _type "text"
                                            _name "Name"
+                                           _autocomplete "new-password"
                                            _placeholder "Text input"
                                            _value model.Name ]
                                    span [ _class "icon is-small is-left" ] [ 
@@ -680,7 +684,8 @@
                                ]
                                div [ _class "control has-icons-left" ] [ 
                                    input [ _class "input"
-                                           _type "password"
+                                           _type "text"
+                                           _autocomplete "new-password"
                                            _name "EMail"
                                            _placeholder "Text input"
                                            _value model.EMail ]
@@ -698,7 +703,8 @@
                                ]
                                div [ _class "control has-icons-left" ] [ 
                                    input [ _class "input"
-                                           _type "text"
+                                           _type "password"
+                                           _autocomplete "new-password"
                                            _name "Password"
                                            _placeholder "Text input"
                                            _value model.Password ]

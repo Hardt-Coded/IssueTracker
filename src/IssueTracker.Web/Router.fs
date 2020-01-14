@@ -10,14 +10,12 @@ let browser = pipeline {
     plug acceptHtml
     plug putSecureBrowserHeaders
     plug fetchSession
-    set_header "x-pipeline-type" "Browser"
 }
 
 let securedPipeline = pipeline {
     plug acceptHtml
     plug putSecureBrowserHeaders
     plug fetchSession
-    set_header "x-pipeline-type" "Secured"
     requires_authentication (fun next ctx -> printfn "whoops; in auth"; redirectTo false "/login" next ctx)
 }
 

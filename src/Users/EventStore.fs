@@ -41,15 +41,15 @@ module EventStore =
             failwith "can not convert event"
 
 
-    let private readEvents (getEventStore:unit -> Task<EventStore<JToken,int64>>) aggregate id : Task<Result<(Event * int64) list,Errors>> =
+    let private readEvents (getEventStore:unit -> Task<EventStore<JToken,int64>>) aggregate id : Task<Result<(Event * int64) list,Errors list>> =
         EventStore.readAllEvents getEventStore eventConverter aggregate id
 
 
-    let private readEventsStartSpecificVersion (getEventStore:unit -> Task<EventStore<JToken,int64>>) aggregate id version : Task<Result<(Event * int64) list,Errors>> =
+    let private readEventsStartSpecificVersion (getEventStore:unit -> Task<EventStore<JToken,int64>>) aggregate id version : Task<Result<(Event * int64) list,Errors list>> =
         EventStore.readEventsSpecificVersion getEventStore eventConverter aggregate id version 
 
 
-    let private readAllUserStreams (getEventStore:unit -> Task<EventStore<JToken,int64>>) aggregate : Task<Result<Stream<int64> list,Errors>> =
+    let private readAllUserStreams (getEventStore:unit -> Task<EventStore<JToken,int64>>) aggregate : Task<Result<Stream<int64> list,Errors list>> =
         EventStore.readAllStreams getEventStore aggregate
 
 
@@ -58,10 +58,10 @@ module EventStore =
 
 
     type UserEventStore = {
-        StoreEvents: string -> IEvent list -> Task<Result<unit,Errors>>
-        ReadEvents: string -> Task<Result<(Event * int64) list,Errors>>
-        ReadEventsStartSpecificVersion: string -> int64 -> Task<Result<(Event * int64) list,Errors>>
-        ReadAllUserStreams: unit -> Task<Result<Stream<int64> list,Errors>>
+        StoreEvents: string -> IEvent list -> Task<Result<unit,Errors list>>
+        ReadEvents: string -> Task<Result<(Event * int64) list,Errors list>>
+        ReadEventsStartSpecificVersion: string -> int64 -> Task<Result<(Event * int64) list,Errors list>>
+        ReadAllUserStreams: unit -> Task<Result<Stream<int64> list,Errors list>>
         AggregateName:string
     }
 

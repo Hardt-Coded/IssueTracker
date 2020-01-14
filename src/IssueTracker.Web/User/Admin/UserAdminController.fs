@@ -16,14 +16,22 @@ module UserAdminController
     open UserAdminViews
     open UserAdminModels
     open Common
+    open System
     
 
-    let convertErrorToString (error:Errors) =
-        match error with
-        | Errors.DomainError e ->
-            e
-        | InfrastructureError ie ->
-            sprintf "an internal error has occured: %s" ie.Message
+    let convertErrorToString (errors:Errors list) =
+        let joinStr (l:string seq) = String.Join("<br />", l)
+
+        errors
+        |> List.map (fun error ->
+            match error with
+            | Errors.DomainError e ->
+                e
+            | InfrastructureError ie ->
+                sprintf "an internal error has occured: %s" ie.Message
+        )
+        |> joinStr
+        
 
 
     open System

@@ -67,7 +67,7 @@ module Result =
         | Ok f, Ok x -> Ok (f x)
         | Error err1, Ok _ -> Error err1
         | Ok _, Error err2 -> Error err2
-        | Error err1, Error _ -> Error err1 
+        | Error err1, Error _ -> Error err1
 
 
     // combine a list of results, monadically

@@ -10,6 +10,7 @@ open Common.Projections
 open Users.EventStore
 open Users.Services
 open Users.Projections
+open Microsoft.Extensions.Configuration
 
 
 let endpointPipe = pipeline {
@@ -37,15 +38,23 @@ let app = application {
 
     service_config (fun services ->
 
-        let eventStoreConnection = "UseDevelopmentStorage=true;"
-        let tableName = "IssueTrackerEventSource"
+        //let eventStoreConnection = "UseDevelopmentStorage=true;"
+        //let tableName = "IssueTrackerEventSource"
         let ulpStorageFileName = "userlist.json"
 
-        let getEventStore = Common.Infrastructure.EventStore.eventStore tableName eventStoreConnection
+        
 
+        
+            
             
         // event store
         services.AddSingleton<UserEventStore>(fun sp ->
+            let config = sp.GetService<IConfiguration>()
+            let eventStoreConnection = config.GetSection("EventStore").GetValue("Connection")
+            let tableName = config.GetSection("EventStore").GetValue("TableName")
+            //let eventStoreConnection = "UseDevelopmentStorage=true;"
+            //let tableName = "IssueTrackerEventSource"
+            let getEventStore = Common.Infrastructure.EventStore.eventStore tableName eventStoreConnection
             createUserEventStore getEventStore "User"
         ) |> ignore
 
@@ -57,7 +66,14 @@ let app = application {
         // user list projection
         services.AddSingleton<Users.Projections.UserList.UserListProjection>(fun sp -> 
             UserList.UserListProjection(sp.GetService<UserEventStore>(),
-                (fun e -> ()),
+                (fun e -> 
+                    e 
+                    |> List.iter (fun i -> 
+                        match i with 
+                        | Common.Domain.Errors.DomainError de -> failwith de
+                        | Common.Domain.Errors.InfrastructureError exn -> raise exn
+                     )
+                ),
                 (fun () -> async { return FileStorage.loadProjection ulpStorageFileName }),
                 (fun list -> async { return FileStorage.storeProjection ulpStorageFileName list })
             ) 

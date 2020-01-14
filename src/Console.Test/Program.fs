@@ -32,11 +32,15 @@ let private userEventStore =
     
 
 let printError e =
-    match e with
-    | DomainError s ->
-        printfn "Error: %s" s
-    | InfrastructureError ex ->
-        printfn "Exception: %s" ex.Message
+    e
+    |> List.iter (fun e ->
+        match e with
+        | DomainError s ->
+            printfn "Error: %s" s
+        | InfrastructureError ex ->
+            printfn "Exception: %s" ex.Message
+    )
+    
 
 let userListProjection = 
     UserListProjection(userEventStore,
@@ -115,7 +119,7 @@ type Msg =
     | CancelForm
     | Successfull
 
-    | OnError of Errors
+    | OnError of Errors list
 
     | Nothing
 
@@ -287,15 +291,20 @@ let update msg model =
         
         { model with NewUserData = UserFormData.Empty; Form = SuccessfulForm }, updateUserListProjectionCmd ()
 
-    | OnError error ->
+    | OnError errors ->
         let error =
-            match error with
-            | DomainError de ->
-                sprintf "Domain Error: %s" de
-            | InfrastructureError ie ->
-                sprintf "Infrastructure Error: %s" ie.Message
+            errors
+            |> List.map (fun error ->
+                match error with
+                | DomainError de ->
+                    sprintf "Domain Error: %s" de
+                | InfrastructureError ie ->
+                    sprintf "Infrastructure Error: %s" ie.Message
+            )
+            
+            
 
-        { model with Error = error; Form = ErrorForm}, Cmd.none
+        { model with Error = String.Join("\r\n", error); Form = ErrorForm}, Cmd.none
 
     | Nothing ->
         model, Cmd.none

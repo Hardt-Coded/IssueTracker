@@ -28,6 +28,7 @@ module Types =
             else
                 "invalid email adress" 
                 |> DomainError
+                |> List.singleton
                 |> Error
 
 
@@ -46,6 +47,7 @@ module Types =
             if String.IsNullOrWhiteSpace(notEmptyStr) then
                 sprintf "%s must not be empty" label
                 |> DomainError
+                |> List.singleton
                 |> Error
             else
                 NotEmptyString notEmptyStr |> Ok

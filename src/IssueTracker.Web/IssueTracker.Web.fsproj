@@ -25,6 +25,9 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="appsettings.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="Properties\launchSettings.json" />
     <Content Include="static\admin.css" />
     <Content Include="static\login.css" />

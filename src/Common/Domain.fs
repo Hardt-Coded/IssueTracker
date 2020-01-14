@@ -9,7 +9,7 @@ module Domain =
     
 
     type Aggregate<'state,'command,'event, 'error> = {
-        Handle: 'state option -> 'command -> Result<'event list,Errors>
+        Handle: 'state option -> 'command -> Result<'event list,'error>
         Apply: 'state option -> 'event -> 'state option
         Exec: 'state option -> Result<('event * int64) list,'error> -> 'state option
         ExecWithVersion: 'state option -> Result<('event * int64) list,'error> -> ('state * int64) option

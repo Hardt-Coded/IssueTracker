@@ -31,7 +31,10 @@ module Services =
         task {
 
             if (checkEMailDuplicate command.EMail) then
-                return DomainError "email already in use" |> Error
+                return 
+                    DomainError "email already in use" 
+                    |> List.singleton
+                    |> Error
             else
                 let events = aggregate.Handle None (CreateUser command)
                 match events with
@@ -70,7 +73,10 @@ module Services =
         task {
 
             if (checkEMailDuplicate command.EMail) then
-                return DomainError "email already in use" |> Error
+                return 
+                    DomainError "email already in use" 
+                    |> List.singleton
+                    |> Error
             else
                 let! userEvents =
                     eventStore.ReadEvents command.UserId
@@ -195,13 +201,13 @@ module Services =
 
     type UserService = {
         GetUser:string -> Task<State option>
-        CreateUser: CheckEMailDuplication->CommandArguments.CreateUser->Task<Result<unit,Errors>>
-        DeleteUser:CommandArguments.DeleteUser->Task<Result<unit,Errors>>
-        ChangeEMail:CheckEMailDuplication->CommandArguments.ChangeEMail->Task<Result<unit,Errors>>
-        ChangeName:CommandArguments.ChangeName->Task<Result<unit,Errors>>
-        ChangePassword:CommandArguments.ChangePassword->Task<Result<unit,Errors>>
-        AddToGroup:CommandArguments.AddToGroup->Task<Result<unit,Errors>>
-        RemoveFromGroup:CommandArguments.RemoveFromGroup->Task<Result<unit,Errors>>
+        CreateUser: CheckEMailDuplication->CommandArguments.CreateUser->Task<Result<unit,Errors list>>
+        DeleteUser:CommandArguments.DeleteUser->Task<Result<unit,Errors list>>
+        ChangeEMail:CheckEMailDuplication->CommandArguments.ChangeEMail->Task<Result<unit,Errors list>>
+        ChangeName:CommandArguments.ChangeName->Task<Result<unit,Errors list>>
+        ChangePassword:CommandArguments.ChangePassword->Task<Result<unit,Errors list>>
+        AddToGroup:CommandArguments.AddToGroup->Task<Result<unit,Errors list>>
+        RemoveFromGroup:CommandArguments.RemoveFromGroup->Task<Result<unit,Errors list>>
     }
 
 
