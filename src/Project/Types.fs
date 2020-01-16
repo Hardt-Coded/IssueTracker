@@ -13,6 +13,7 @@ module Types =
             if String.IsNullOrWhiteSpace(projectId) then
                 sprintf "project id must not be empty" 
                 |> DomainError
+                |> List.singleton
                 |> Error
             else
                 ProjectId projectId |> Ok
@@ -32,6 +33,7 @@ module Types =
             if String.IsNullOrWhiteSpace(issueId) then
                 sprintf "issue id must not be empty" 
                 |> DomainError
+                |> List.singleton
                 |> Error
             else
                 IssueId issueId |> Ok
@@ -52,6 +54,7 @@ module Types =
             if String.IsNullOrWhiteSpace(commentId) then
                 sprintf "comment id must not be empty" 
                 |> DomainError
+                |> List.singleton
                 |> Error
             else
                 CommentId commentId |> Ok
@@ -71,6 +74,7 @@ module Types =
             if String.IsNullOrWhiteSpace(attachmentId) then
                 sprintf "attachment id must not be empty" 
                 |> DomainError
+                |> List.singleton
                 |> Error
             else
                 AttachmentId attachmentId |> Ok
@@ -80,4 +84,7 @@ module Types =
     
         /// use only for event dto convertion
         let fromEventDto attachmentId = AttachmentId attachmentId
+
+
+
 

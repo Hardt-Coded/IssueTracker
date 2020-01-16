@@ -125,7 +125,7 @@ module Domain =
         | None, CreateUser args ->
             userCreated args
         | Some _, CreateUser _ ->
-            "you can not have a create user event, when a user alread existis"
+            "you can not have a create user event, when a user alread exists"
             |> DomainError
             |> List.singleton
             |> Error
