@@ -802,6 +802,18 @@ module Domain =
             |> failwith
 
 
+    let private exec = exec apply
+    let private execWithVersion = execWithEvents apply
+
+
+    let aggregate : Aggregate<_,_,_,Errors list> = {
+        Apply = apply
+        Handle = handle
+        Exec = exec
+        ExecWithVersion = execWithVersion
+    }
+
+
 
 
    
