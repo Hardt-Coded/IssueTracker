@@ -201,7 +201,7 @@ module Dtos =
         open Users.Types
 
 
-        let private toIssueStateDto state =
+        let toIssueStateDto state =
             match state with
             | IssueState.New -> "NEW"
             | IssueState.Active -> "ACTIVE"
@@ -209,7 +209,7 @@ module Dtos =
             | IssueState.OnHold -> "ONHOLD"
 
 
-        let inline private toIssueDto event : ^ev when ^ev : (member EventType:string) =
+        let inline toIssueDto event : ^ev when ^ev : (member EventType:string) =
             match event with
             | IssueCreated e ->
                 {
@@ -278,7 +278,7 @@ module Dtos =
                 }  |> unbox
 
 
-        let private toProjectStateDto state =
+        let toProjectStateDto state =
             match state with
             | ProjectState.Active -> "ACTIVE"
             | ProjectState.Done -> "DONE"

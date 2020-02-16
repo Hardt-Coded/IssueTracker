@@ -37,49 +37,49 @@ module UserList =
                 | None, UserCreated ev ->
                     let hPair = PasswordHash.value ev.PasswordHash
                     {
-                        UserId = ev.UserId |> UserId.value
-                        Name= ev.Name |> NoneEmptyString.value
-                        EMail=ev.EMail |> EMail.value
-                        PasswordHash = hPair.Hash
-                        PasswordSalt = hPair.Salt
-                        Groups=[]
-                        Version = version
+                        UserId              = ev.UserId |> UserId.value
+                        Name                = ev.Name |> NoneEmptyString.value
+                        EMail               = ev.EMail |> EMail.value
+                        PasswordHash        = hPair.Hash
+                        PasswordSalt        = hPair.Salt
+                        Groups              = []
+                        Version             = version
                     } |> Some
                 | Some _, UserDeleted ev ->
                     None
                 | Some state, EMailChanged ev ->
                     {
                         state with 
-                            EMail = EMail.value ev.EMail
-                            Version = version
+                            EMail           = EMail.value ev.EMail
+                            Version         = version
                     } |> Some
                 | Some state, NameChanged ev ->
                     {
                         state with 
-                            Name = NoneEmptyString.value ev.Name
-                            Version = version
+                            Name            = NoneEmptyString.value ev.Name
+                            Version         = version
                     } |> Some
                 | Some state, PasswordChanged ev ->
                     let hPair = PasswordHash.value ev.PasswordHash
                     {
                         state with 
-                            PasswordHash = hPair.Hash
-                            PasswordSalt = hPair.Salt
-                            Version = version
+                            PasswordHash    = hPair.Hash
+                            PasswordSalt    = hPair.Salt
+                            Version         = version
                     } |> Some
                 | Some state, AddedToGroup ev ->
                     let newGroup = ev.Group |> NoneEmptyString.value
                     {
                         state with 
-                            Groups = newGroup :: state.Groups
-                            Version = version
+                            Groups          = newGroup :: state.Groups
+                            Version         = version
                     } |> Some
                 | Some state, RemovedFromGroup ev ->
                     let group = ev.Group |> NoneEmptyString.value
                     {
                         state with 
-                            Groups = state.Groups |> List.filter (fun i -> i<>group)
-                            Version = version
+                            Groups          = state.Groups |> List.filter (fun i -> i<>group)
+                            Version         = version
                     } |> Some
                 | _, _ ->
                     state

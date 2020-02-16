@@ -517,7 +517,7 @@ module Domain =
     type Project = {
         ProjectId:ProjectId
         Title:NoneEmptyString
-        Desciption:string
+        Description:string
         State:ProjectState
         Issues: Issue list
     }
@@ -740,7 +740,7 @@ module Domain =
             {
                 ProjectId=ev.ProjectId
                 Title=ev.Title
-                Desciption=ev.Description
+                Description=ev.Description
                 State=ProjectState.Active
                 Issues=[]
             } |> Some
@@ -759,7 +759,7 @@ module Domain =
             } |> Some
         | Some state, ProjectDescriptionChanged ev ->
             { state with
-                Desciption = ev.Description
+                Description = ev.Description
             } |> Some
         | Some state, IssueEvent issueEvent ->
             let issueId =

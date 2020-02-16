@@ -2,12 +2,16 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
+    <LangVersion>preview</LangVersion>
   </PropertyGroup>
 
   <ItemGroup>
     <Compile Include="Types.fs" />
     <Compile Include="Domain.fs" />
     <Compile Include="Dtos.fs" />
+    <Compile Include="EventStore.fs" />
+    <Compile Include="Services.fs" />
+    <Compile Include="Projections.fs" />
   </ItemGroup>
 
   <ItemGroup>

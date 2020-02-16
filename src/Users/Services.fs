@@ -21,7 +21,6 @@ module Services =
         task {
             let! versionResult =                     
                 events
-                |> List.map (fun i -> Events.toDto i)
                 |> eventStore.StoreEvents id
             return versionResult
         }
