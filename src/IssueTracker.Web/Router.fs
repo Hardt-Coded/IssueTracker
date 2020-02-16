@@ -35,7 +35,12 @@ let defaultView = router {
     forward "/users" (router {
         pipe_through securedPipeline
         forward "" (fun next ctx -> UserAdminController.userDetailRouter next ctx)
-    })  
+    }) 
+    
+    forward "/projects" (router {
+        pipe_through securedPipeline
+        forward "" (fun next ctx -> ProjectController.projectDetailRouter next ctx)
+    })
 
 
     forward "/login" (fun next ctx -> UserLoginController.loginController next ctx)

@@ -31,6 +31,7 @@ let layout (ctx:HttpContext) (content: XmlNode list)  =
                 div [_class "navbar-menu"; _id "navMenu"] [
                     div [_class "navbar-start"] [
                         if (ctx.User.Identity.IsAuthenticated) then
+                            a [_class "navbar-item"; _href "/projects"] [rawText "Project Management"]
                             a [_class "navbar-item"; _href "/users"] [rawText "User Management"]
                             a [_class "navbar-item"; _href "/logout"] [rawText "Logout"]
                     ]

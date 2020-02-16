@@ -220,7 +220,7 @@ module ProjectList =
         
 
 
-    type UserListProjection(userEventStore:ProjectEventStore,
+    type ProjectListProjection(userEventStore:ProjectEventStore,
         handleError,
         loadProjection,
         storeProjection
