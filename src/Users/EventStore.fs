@@ -52,30 +52,25 @@ module EventStore =
     let private readAllUserStreams (getEventStore:unit -> Task<EventStore<JToken,int64>>) aggregate : Task<Result<Stream<int64> list,Errors list>> =
         EventStore.readAllStreams getEventStore aggregate
 
-    let private storeEvents getEventStore aggregate id events =
+    let private storeUserEvents getEventStore aggregate id events =
         let events =
             events
             |> List.map (fun i -> toDto i)
         EventStore.storeEvents getEventStore aggregate id events
 
     
+    open Common.Infrastructure.EventStore
 
+    type UserEventStore = EventStoreService<Event>
+    
 
-    type UserEventStore = {
-        StoreEvents: string -> Event list -> Task<Result<unit,Errors list>>
-        ReadEvents: string -> Task<Result<(Event * int64) list,Errors list>>
-        ReadEventsStartSpecificVersion: string -> int64 -> Task<Result<(Event * int64) list,Errors list>>
-        ReadAllUserStreams: unit -> Task<Result<Stream<int64> list,Errors list>>
-        AggregateName:string
-    }
-
-    let createUserEventStore (getEventStore:unit -> Task<EventStore<JToken,int64>>) aggregate =
+    let createUserEventStore (getEventStore:unit -> Task<EventStore<JToken,int64>>) aggregate : UserEventStore =
         {
             AggregateName = aggregate
-            StoreEvents = storeEvents getEventStore aggregate
+            StoreEvents = storeUserEvents getEventStore aggregate
             ReadEvents =  readEvents getEventStore aggregate
             ReadEventsStartSpecificVersion =  readEventsStartSpecificVersion getEventStore aggregate
-            ReadAllUserStreams =  fun () -> readAllUserStreams getEventStore aggregate
+            ReadAllStreams =  fun () -> readAllUserStreams getEventStore aggregate
         }
 
 

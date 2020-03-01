@@ -66,11 +66,12 @@ module Dtos =
         [<CLIMutable>]
         type IssueCreated = 
             {
-                    IssueId:string
-                    CreatedBy:string
-                    AssignTo:string
-                    Title:string
-                    Description:string
+                ProjectId:string
+                IssueId:string
+                CreatedBy:string
+                AssignTo:string
+                Title:string
+                Description:string
             }
             interface IEvent with
                 member this.EventType = this.EventType
@@ -80,6 +81,7 @@ module Dtos =
         [<CLIMutable>]
         type IssueDeleted = 
             {
+                ProjectId:string
                 IssueId:string
                 DeletedFrom:string
             }
@@ -91,6 +93,7 @@ module Dtos =
         [<CLIMutable>]
         type IssueStateChanged = 
             {
+                ProjectId:string
                 IssueId:string
                 State:string
             }
@@ -102,6 +105,7 @@ module Dtos =
         [<CLIMutable>]
         type IssueAssignedToUser = 
             {
+                ProjectId:string
                 IssueId:string
                 UserId:string
             }
@@ -113,6 +117,7 @@ module Dtos =
         [<CLIMutable>]
         type IssueTitleChanged = 
             {
+                ProjectId:string
                 IssueId:string
                 Title:string
             }
@@ -124,6 +129,7 @@ module Dtos =
         [<CLIMutable>]
         type IssueDescriptionChanged = 
             {
+                ProjectId:string
                 IssueId:string
                 Description:string
             }
@@ -135,6 +141,7 @@ module Dtos =
         [<CLIMutable>]
         type IssueCommentAdded = 
             {
+                ProjectId:string
                 IssueId:string
                 CommentId:string
                 Text:string
@@ -148,6 +155,7 @@ module Dtos =
         [<CLIMutable>]
         type IssueCommentChanged = 
             {
+                ProjectId:string
                 IssueId:string
                 CommentId:string
                 Text:string
@@ -160,6 +168,7 @@ module Dtos =
         [<CLIMutable>]
         type IssueCommentDeleted = 
             {
+                ProjectId:string
                 IssueId:string
                 CommentId:string
             }
@@ -171,6 +180,7 @@ module Dtos =
         [<CLIMutable>]
         type IssueAttachmentAdded = 
             {
+                ProjectId:string
                 IssueId:string
                 AttachmentId:string
                 Title:string
@@ -186,6 +196,7 @@ module Dtos =
         [<CLIMutable>]
         type IssueAttachmentRemoved = 
             {
+                ProjectId:string
                 IssueId:string
                 AttachmentId:string
             }
@@ -213,6 +224,7 @@ module Dtos =
             match event with
             | IssueCreated e ->
                 {
+                    ProjectId       = ProjectId.value e.ProjectId
                     IssueId         = IssueId.value e.IssueId
                     CreatedBy       = UserId.value e.CreatedBy
                     AssignTo        = UserId.value e.AssignTo
@@ -221,31 +233,37 @@ module Dtos =
                 }  |> unbox
             | IssueDeleted e ->
                 {
+                    ProjectId       = ProjectId.value e.ProjectId
                     IssueId         = IssueId.value e.IssueId
                     DeletedFrom     = UserId.value e.DeletedFrom
                 }  |> unbox
             | IssueStateChanged e ->
                 {
+                    ProjectId       = ProjectId.value e.ProjectId
                     IssueId         = IssueId.value e.IssueId
                     State           = toIssueStateDto e.State
                 }  |> unbox
             | IssueAssignedToUser e ->
                 {
+                    ProjectId       = ProjectId.value e.ProjectId
                     IssueId         = IssueId.value e.IssueId
                     UserId          = UserId.value e.UserId
                 }  |> unbox
             | IssueTitleChanged e ->
                 {
+                    ProjectId       = ProjectId.value e.ProjectId
                     IssueId         = IssueId.value e.IssueId
                     Title           = NoneEmptyString.value e.Title
                 }  |> unbox
             | IssueDescriptionChanged e ->
                 {
+                    ProjectId       = ProjectId.value e.ProjectId
                     IssueId         = IssueId.value e.IssueId
                     Description     = e.Description
                 }  |> unbox
             | IssueCommentAdded e ->
                 {
+                    ProjectId       = ProjectId.value e.ProjectId
                     IssueId         = IssueId.value e.IssueId
                     CommentId       = CommentId.value e.CommentId
                     Text            = NoneEmptyString.value e.Text
@@ -253,17 +271,20 @@ module Dtos =
                 }  |> unbox
             | IssueCommentChanged e ->
                 {
+                    ProjectId       = ProjectId.value e.ProjectId
                     IssueId         = IssueId.value e.IssueId
                     CommentId       = CommentId.value e.CommentId
                     Text            = NoneEmptyString.value e.Text
                 }  |> unbox
             | IssueCommentDeleted e ->
                 {
+                    ProjectId       = ProjectId.value e.ProjectId
                     IssueId         = IssueId.value e.IssueId
                     CommentId       = CommentId.value e.CommentId
                 }  |> unbox
             | IssueAttachmentAdded e ->
                 {
+                    ProjectId       = ProjectId.value e.ProjectId
                     IssueId         = IssueId.value e.IssueId
                     AttachmentId    = AttachmentId.value e.AttachmentId
                     Title           = NoneEmptyString.value e.Title
@@ -273,6 +294,7 @@ module Dtos =
                 }  |> unbox
             | IssueAttachmentRemoved e ->
                 {
+                    ProjectId       = ProjectId.value e.ProjectId
                     IssueId         = IssueId.value e.IssueId
                     AttachmentId    = AttachmentId.value e.AttachmentId
                 }  |> unbox
@@ -333,6 +355,7 @@ module Dtos =
             match ev with
             | :? IssueCreated as e ->
                 Issue.IssueCreated {
+                    ProjectId       = ProjectId.fromEventDto e.ProjectId
                     IssueId         = IssueId.fromEventDto e.IssueId
                     CreatedBy       = UserId.fromEventDto e.CreatedBy
                     AssignTo        = UserId.fromEventDto e.AssignTo
@@ -341,31 +364,37 @@ module Dtos =
                 }
             | :? IssueDeleted as e ->
                 Issue.IssueDeleted {
+                    ProjectId       = ProjectId.fromEventDto e.ProjectId
                     IssueId         = IssueId.fromEventDto e.IssueId
                     DeletedFrom     = UserId.fromEventDto e.DeletedFrom
                 }
             | :? IssueStateChanged as e ->
                 Issue.IssueStateChanged {
+                    ProjectId       = ProjectId.fromEventDto e.ProjectId
                     IssueId         = IssueId.fromEventDto e.IssueId
                     State           = toIssueStateDomain e.State
                 }
             | :? IssueAssignedToUser as e ->
                 Issue.IssueAssignedToUser {
+                    ProjectId       = ProjectId.fromEventDto e.ProjectId
                     IssueId         = IssueId.fromEventDto e.IssueId
                     UserId          = UserId.fromEventDto e.UserId
                 }
             | :? IssueTitleChanged as e ->
                 Issue.IssueTitleChanged {
+                    ProjectId       = ProjectId.fromEventDto e.ProjectId
                     IssueId         = IssueId.fromEventDto e.IssueId
                     Title           = NoneEmptyString.fromEventDto e.Title
                 }
             | :? IssueDescriptionChanged as e ->
                 Issue.IssueDescriptionChanged {
+                    ProjectId       = ProjectId.fromEventDto e.ProjectId
                     IssueId         = IssueId.fromEventDto e.IssueId
                     Description     = e.Description
                 }
             | :? IssueCommentAdded as e ->
                 Issue.IssueCommentAdded {
+                    ProjectId       = ProjectId.fromEventDto e.ProjectId
                     IssueId         = IssueId.fromEventDto e.IssueId
                     CommentId       = CommentId.fromEventDto e.CommentId
                     Text            = NoneEmptyString.fromEventDto e.Text
@@ -373,17 +402,20 @@ module Dtos =
                 }
             | :? IssueCommentChanged as e ->
                 Issue.IssueCommentChanged {
+                    ProjectId       = ProjectId.fromEventDto e.ProjectId
                     IssueId         = IssueId.fromEventDto e.IssueId
                     CommentId       = CommentId.fromEventDto e.CommentId
                     Text            = NoneEmptyString.fromEventDto e.Text
                 } 
             | :? IssueCommentDeleted as e ->
                 Issue.IssueCommentDeleted {
+                    ProjectId       = ProjectId.fromEventDto e.ProjectId
                     IssueId         = IssueId.fromEventDto e.IssueId
                     CommentId       = CommentId.fromEventDto e.CommentId
                 } 
             | :? IssueAttachmentAdded as e ->
                 Issue.IssueAttachmentAdded {
+                    ProjectId       = ProjectId.fromEventDto e.ProjectId
                     IssueId         = IssueId.fromEventDto e.IssueId
                     AttachmentId    = AttachmentId.fromEventDto e.AttachmentId
                     Title           = NoneEmptyString.fromEventDto e.Title
@@ -393,6 +425,7 @@ module Dtos =
                 }
             | :? IssueAttachmentRemoved as e ->
                 Issue.IssueAttachmentRemoved {
+                    ProjectId       = ProjectId.fromEventDto e.ProjectId
                     IssueId         = IssueId.fromEventDto e.IssueId
                     AttachmentId    = AttachmentId.fromEventDto e.AttachmentId
                 }

@@ -52,6 +52,7 @@ module Domain =
         module CommandArguments =
             
             type CreateIssue = {
+                ProjectId:string
                 IssueId:string
                 CreateBy:string
                 AssignTo:string
@@ -60,31 +61,37 @@ module Domain =
             }
 
             type DeleteIssue = {
+                ProjectId:string
                 IssueId:string
                 DeletedFrom:string
             }
 
             type ChangeIssueState = {
+                ProjectId:string
                 IssueId:string
                 State:string
             }
             
             type AssignIssueToUser = {
+                ProjectId:string
                 IssueId:string
                 UserId:string
             }
 
             type ChangeIssueTitle = {
+                ProjectId:string
                 IssueId:string
                 Title:string
             }
 
             type ChangeIssueDescription = {
+                ProjectId:string
                 IssueId:string
                 Description:string
             }
 
             type AddIssueComment = {
+                ProjectId:string
                 IssueId:string
                 CommentId:string
                 Text:string
@@ -92,17 +99,20 @@ module Domain =
             }
 
             type ChangeIssueComment = {
+                ProjectId:string
                 IssueId:string
                 CommentId:string
                 Text:string
             }
 
             type DeleteIssueComment = {
+                ProjectId:string
                 IssueId:string
                 CommentId:string
             }
 
             type AddIssueAttachment = {
+                ProjectId:string
                 IssueId:string
                 AttachmentId:string
                 Title:string
@@ -113,6 +123,7 @@ module Domain =
             }
 
             type RemoveIssueAttachment = {
+                ProjectId:string
                 IssueId:string
                 AttachmentId:string
             }
@@ -135,6 +146,7 @@ module Domain =
         module EventArguments =
             
             type IssueCreated = {
+                ProjectId:ProjectId
                 IssueId:IssueId
                 CreatedBy:UserId
                 AssignTo:UserId
@@ -143,31 +155,37 @@ module Domain =
             }
 
             type IssueDeleted = {
+                ProjectId:ProjectId
                 IssueId:IssueId
                 DeletedFrom:UserId
             }
 
             type IssueStateChanged = {
+                ProjectId:ProjectId
                 IssueId:IssueId
                 State:IssueState
             }
             
             type IssueAssignedToUser = {
+                ProjectId:ProjectId
                 IssueId:IssueId
                 UserId:UserId
             }
 
             type IssueTitleChanged = {
+                ProjectId:ProjectId
                 IssueId:IssueId
                 Title:NoneEmptyString
             }
 
             type IssueDescriptionChanged = {
+                ProjectId:ProjectId
                 IssueId:IssueId
                 Description:string
             }
 
             type IssueCommentAdded = {
+                ProjectId:ProjectId
                 IssueId:IssueId
                 CommentId:CommentId
                 Text:NoneEmptyString
@@ -175,17 +193,20 @@ module Domain =
             }
 
             type IssueCommentChanged = {
+                ProjectId:ProjectId
                 IssueId:IssueId
                 CommentId:CommentId
                 Text:NoneEmptyString
             }
 
             type IssueCommentDeleted = {
+                ProjectId:ProjectId
                 IssueId:IssueId
                 CommentId:CommentId
             }
 
             type IssueAttachmentAdded = {
+                ProjectId:ProjectId
                 IssueId:IssueId
                 AttachmentId:AttachmentId
                 Title:NoneEmptyString
@@ -196,6 +217,7 @@ module Domain =
             }
 
             type IssueAttachmentRemoved = {
+                ProjectId:ProjectId
                 IssueId:IssueId
                 AttachmentId:AttachmentId
             }
@@ -251,177 +273,199 @@ module Domain =
                    |> Error
 
 
-           and createIssue args =
-               let create issueId createdBy assignTo title description =
-                   IssueCreated {
-                       IssueId=issueId
-                       CreatedBy=createdBy
-                       AssignTo=assignTo
-                       Title=title
-                       Description=description
-                   }
-                   |> List.singleton
+        and createIssue args =
+            let create projectId issueId createdBy assignTo title description =
+                IssueCreated {
+                    ProjectId = projectId
+                    IssueId=issueId
+                    CreatedBy=createdBy
+                    AssignTo=assignTo
+                    Title=title
+                    Description=description
+                }
+                |> List.singleton
 
-               let issueId = IssueId.create args.IssueId
-               let createdBy = UserId.create args.CreateBy
-               let assignTo = UserId.create args.AssignTo
-               let title = NoneEmptyString.create "Issue Title" args.Title
-               let description = Ok args.Description
-               create <!> issueId <*> createdBy <*> assignTo <*> title <*> description
-
-
-           and deleteIssue args =
-               let create issueId deletedFrom = 
-                   IssueDeleted {
-                       IssueId=issueId
-                       DeletedFrom=deletedFrom
-                   }
-                   |> List.singleton
-
-               let issueId = IssueId.create args.IssueId
-               let deletedFrom = UserId.create args.DeletedFrom
-               create <!> issueId <*> deletedFrom
+            let projectId = ProjectId.create args.ProjectId
+            let issueId = IssueId.create args.IssueId
+            let createdBy = UserId.create args.CreateBy
+            let assignTo = UserId.create args.AssignTo
+            let title = NoneEmptyString.create "Issue Title" args.Title
+            let description = Ok args.Description
+            create <!> projectId <*> issueId <*> createdBy <*> assignTo <*> title <*> description
 
 
-           and changeState args =
-               let create issueId state = 
-                   IssueStateChanged {
-                       IssueId=issueId
-                       State=state
-                   }
-                   |> List.singleton
+        and deleteIssue args =
+            let create projectId issueId deletedFrom = 
+                IssueDeleted {
+                    ProjectId = projectId
+                    IssueId=issueId
+                    DeletedFrom=deletedFrom
+                }
+                |> List.singleton
 
-               let issueId = IssueId.create args.IssueId
-               let state = 
-                   match args.State.ToUpper() with
-                   | "NEW" -> Ok IssueState.New
-                   | "ACTIVE" -> Ok IssueState.Active
-                   | "DONE" -> Ok IssueState.Done
-                   | "ONHOLD" -> Ok IssueState.OnHold
-                   | _ -> 
-                       "invalid issue state"
-                       |> DomainError
-                       |> List.singleton
-                       |> Error
-
-               create <!> issueId <*> state
+            let projectId = ProjectId.create args.ProjectId
+            let issueId = IssueId.create args.IssueId
+            let deletedFrom = UserId.create args.DeletedFrom
+            create <!> projectId <*> issueId <*> deletedFrom
 
 
-           and assignToUser args =
-               let create issueId userId = 
-                   IssueAssignedToUser {
-                       IssueId=issueId
-                       UserId=userId
-                   }
-                   |> List.singleton
+        and changeState args =
+            let create projectId issueId state = 
+                IssueStateChanged {
+                    ProjectId = projectId
+                    IssueId=issueId
+                    State=state
+                }
+                |> List.singleton
 
-               let issueId = IssueId.create args.IssueId
-               let userId = UserId.create args.UserId
-               create <!> issueId <*> userId
+            let projectId = ProjectId.create args.ProjectId
+            let issueId = IssueId.create args.IssueId
+            let state = 
+                match args.State.ToUpper() with
+                | "NEW" -> Ok IssueState.New
+                | "ACTIVE" -> Ok IssueState.Active
+                | "DONE" -> Ok IssueState.Done
+                | "ONHOLD" -> Ok IssueState.OnHold
+                | _ -> 
+                    "invalid issue state"
+                    |> DomainError
+                    |> List.singleton
+                    |> Error
 
-               
-           and changeTitle args =
-               let create issueId title =
-                   IssueTitleChanged {
-                       IssueId=issueId
-                       Title = title
-                   }
-                   |> List.singleton
+            create <!> projectId <*> issueId <*> state
 
-               let issueId = IssueId.create args.IssueId
-               let title = NoneEmptyString.create "Issue Title" args.Title
-               create <!> issueId <*> title
+
+        and assignToUser args =
+            let create projectId issueId userId = 
+                IssueAssignedToUser {
+                    ProjectId = projectId
+                    IssueId=issueId
+                    UserId=userId
+                }
+                |> List.singleton
+
+            let projectId = ProjectId.create args.ProjectId
+            let issueId = IssueId.create args.IssueId
+            let userId = UserId.create args.UserId
+            create <!> projectId <*> issueId <*> userId
 
                
-           and changeDescription args =
-               let create issueId description =
-                   IssueDescriptionChanged {
-                       IssueId=issueId
-                       Description=description
-                   }
-                   |> List.singleton
+        and changeTitle args =
+            let create projectId issueId title =
+                IssueTitleChanged {
+                    ProjectId = projectId
+                    IssueId=issueId
+                    Title = title
+                }
+                |> List.singleton
 
-               let issueId = IssueId.create args.IssueId
-               let description = Ok args.Description
-               create <!> issueId <*> description
-               
-
-           and addComment args =
-               let create issueId commentId text createdBy =
-                   IssueCommentAdded {
-                       IssueId=issueId
-                       CommentId=commentId
-                       Text=text
-                       CreatedBy=createdBy                
-                   }
-                   |> List.singleton
-
-               let issueId = IssueId.create args.IssueId
-               let commentId = CommentId.create args.CommentId
-               let text = NoneEmptyString.create "Comment Text" args.Text
-               let createdBy = UserId.create args.CreatedBy
-               create <!> issueId <*> commentId <*> text <*> createdBy
-
-
-           and changeComment args =
-               let create issueId commentId text =
-                   IssueCommentChanged {
-                       IssueId=issueId
-                       CommentId=commentId
-                       Text=text
-                   }
-                   |> List.singleton
-
-               let issueId = IssueId.create args.IssueId
-               let commentId = CommentId.create args.CommentId
-               let text = NoneEmptyString.create "Comment Text" args.Text
-               create <!> issueId <*> commentId <*> text
+            let projectId = ProjectId.create args.ProjectId
+            let issueId = IssueId.create args.IssueId
+            let title = NoneEmptyString.create "Issue Title" args.Title
+            create <!> projectId <*> issueId <*> title
 
                
-           and deleteComment args =
-               let create issueId commentId =
-                   IssueCommentDeleted{
-                       IssueId=issueId
-                       CommentId=commentId
-                   }
-                   |> List.singleton
+        and changeDescription args =
+            let create projectId issueId description =
+                IssueDescriptionChanged {
+                    ProjectId = projectId
+                    IssueId=issueId
+                    Description=description
+                }
+                |> List.singleton
 
-               let issueId = IssueId.create args.IssueId
-               let commentId = CommentId.create args.CommentId
-               create <!> issueId <*> commentId
+            let projectId = ProjectId.create args.ProjectId
+            let issueId = IssueId.create args.IssueId
+            let description = Ok args.Description
+            create <!> projectId <*> issueId <*> description
+               
+
+        and addComment args =
+            let create projectId issueId commentId text createdBy =
+                IssueCommentAdded {
+                    ProjectId = projectId
+                    IssueId=issueId
+                    CommentId=commentId
+                    Text=text
+                    CreatedBy=createdBy                
+                }
+                |> List.singleton
+
+            let projectId = ProjectId.create args.ProjectId
+            let issueId = IssueId.create args.IssueId
+            let commentId = CommentId.create args.CommentId
+            let text = NoneEmptyString.create "Comment Text" args.Text
+            let createdBy = UserId.create args.CreatedBy
+            create <!> projectId <*> issueId <*> commentId <*> text <*> createdBy
+
+
+        and changeComment args =
+            let create projectId issueId commentId text =
+                IssueCommentChanged {
+                    ProjectId = projectId
+                    IssueId=issueId
+                    CommentId=commentId
+                    Text=text
+                }
+                |> List.singleton
+
+            let projectId = ProjectId.create args.ProjectId
+            let issueId = IssueId.create args.IssueId
+            let commentId = CommentId.create args.CommentId
+            let text = NoneEmptyString.create "Comment Text" args.Text
+            create <!> projectId <*> issueId <*> commentId <*> text
 
                
-           and addAttachment args =
-               let create issueId attachmentId title fileName blobReference createdBy =
-                   IssueAttachmentAdded {
-                       IssueId=issueId
-                       AttachmentId=attachmentId
-                       Title=title
-                       FileName=fileName
-                       BlobReference=blobReference
-                       CreatedBy=createdBy
-                   }
-                   |> List.singleton
+        and deleteComment args =
+            let create projectId issueId commentId =
+                IssueCommentDeleted{
+                    ProjectId = projectId
+                    IssueId=issueId
+                    CommentId=commentId
+                }
+                |> List.singleton
 
-               let issueId = IssueId.create args.IssueId
-               let attachmentId = AttachmentId.create args.AttachmentId
-               let title = NoneEmptyString.create "Attachment Title" args.Title
-               let fileName = NoneEmptyString.create "Filename" args.FileName
-               let blobReference = NoneEmptyString.create "Blob Reference" args.BlobReference
-               let createdBy = UserId.create args.CreatedBy
-               create <!> issueId <*> attachmentId <*> title <*> fileName <*> blobReference <*> createdBy
+            let projectId = ProjectId.create args.ProjectId
+            let issueId = IssueId.create args.IssueId
+            let commentId = CommentId.create args.CommentId
+            create <!> projectId <*> issueId <*> commentId
+
                
-           and removeAttachment args =
-               let create issueId attachmentId =
-                   IssueAttachmentRemoved {
-                       IssueId=issueId
-                       AttachmentId=attachmentId
-                   }
-                   |> List.singleton
+        and addAttachment args =
+            let create projectId issueId attachmentId title fileName blobReference createdBy =
+                IssueAttachmentAdded {
+                    ProjectId = projectId
+                    IssueId=issueId
+                    AttachmentId=attachmentId
+                    Title=title
+                    FileName=fileName
+                    BlobReference=blobReference
+                    CreatedBy=createdBy
+                }
+                |> List.singleton
 
-               let issueId = IssueId.create args.IssueId
-               let attachmentId = AttachmentId.create args.AttachmentId
-               create <!> issueId <*> attachmentId
+            let projectId = ProjectId.create args.ProjectId
+            let issueId = IssueId.create args.IssueId
+            let attachmentId = AttachmentId.create args.AttachmentId
+            let title = NoneEmptyString.create "Attachment Title" args.Title
+            let fileName = NoneEmptyString.create "Filename" args.FileName
+            let blobReference = NoneEmptyString.create "Blob Reference" args.BlobReference
+            let createdBy = UserId.create args.CreatedBy
+            create <!> projectId <*> issueId <*> attachmentId <*> title <*> fileName <*> blobReference <*> createdBy
+               
+        and removeAttachment args =
+            let create projectId issueId attachmentId =
+                IssueAttachmentRemoved {
+                    ProjectId = projectId
+                    IssueId=issueId
+                    AttachmentId=attachmentId
+                }
+                |> List.singleton
+
+            let projectId = ProjectId.create args.ProjectId
+            let issueId = IssueId.create args.IssueId
+            let attachmentId = AttachmentId.create args.AttachmentId
+            create <!> projectId <*> issueId <*> attachmentId
 
 
 

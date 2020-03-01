@@ -162,6 +162,16 @@ module Infrastructure =
             }
 
 
+
+        type EventStoreService<'event> = {
+            StoreEvents: string -> 'event list -> Task<Result<unit,Errors list>>
+            ReadEvents: string -> Task<Result<('event * int64) list,Errors list>>
+            ReadEventsStartSpecificVersion: string -> int64 -> Task<Result<('event * int64) list,Errors list>>
+            ReadAllStreams: unit -> Task<Result<Stream<int64> list,Errors list>>
+            AggregateName:string
+        }
+
+
             
 
 
