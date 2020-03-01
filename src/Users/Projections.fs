@@ -126,7 +126,7 @@ module UserList =
         let refreshUsers (state:State list) =
             async {
                 
-                let! streams = userEventStore.ReadAllUserStreams () |> Async.AwaitTask
+                let! streams = userEventStore.ReadAllStreams () |> Async.AwaitTask
                 match streams with
                 | Error e ->
                     e |> handleError 

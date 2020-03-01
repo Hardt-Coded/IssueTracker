@@ -22,14 +22,14 @@ module Services =
 
 
 
-    let inline handleCommand (aggregate:Aggregate<'state,'cmd,'event,Errors list>) (eventStore:EventStoreService<'event>) (getAggregaeId:'cmd->string) (state:'state option) (cmd:'cmd) =
+    let inline handleCommand (aggregate:Aggregate<'state,'cmd,'event,Errors list>) (eventStore:EventStoreService<'event>) aggregateId (state:'state option) (cmd:'cmd) =
         task {
             let events = aggregate.Handle state cmd
             match events with
             | Ok events ->
                 return!
                     events
-                    |> storeProjectEvents eventStore (getAggregaeId cmd)
+                    |> storeProjectEvents eventStore aggregateId
             | Error e ->
                 return Error e
         }

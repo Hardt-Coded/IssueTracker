@@ -29,7 +29,7 @@ module Services =
 
         let private createProject (eventStore:ProjectEventStore) (command:CommandArguments.CreateProject) = 
             (CreateProject command) 
-            |> handleCommand aggregate eventStore (fun (CreateProject x) -> x.ProjectId) None
+            |> handleCommand aggregate eventStore command.ProjectId None
 
 
         let private deleteProject (eventStore:ProjectEventStore) (command:CommandArguments.DeleteProject) = 
@@ -38,7 +38,7 @@ module Services =
 
                 return! 
                     (DeleteProject command) 
-                    |> handleCommand aggregate eventStore (fun (DeleteProject x) -> x.ProjectId) project
+                    |> handleCommand aggregate eventStore command.ProjectId project
             }
 
 
@@ -48,7 +48,7 @@ module Services =
                 
                 return! 
                     (ChangeProjectState command) 
-                    |> handleCommand aggregate eventStore (fun (ChangeProjectState x) -> x.ProjectId) project
+                    |> handleCommand aggregate eventStore command.ProjectId project
             }
 
 
@@ -58,7 +58,7 @@ module Services =
                 
                 return! 
                     (ChangeProjectTitle command) 
-                    |> handleCommand aggregate eventStore (fun (ChangeProjectTitle x) -> x.ProjectId) project
+                    |> handleCommand aggregate eventStore command.ProjectId project
             }
 
 
@@ -68,7 +68,7 @@ module Services =
                 
                 return! 
                     (ChangeProjectDescription command) 
-                    |> handleCommand aggregate eventStore (fun (ChangeProjectDescription x) -> x.ProjectId) project
+                    |> handleCommand aggregate eventStore command.ProjectId project
             }
 
 
@@ -78,7 +78,7 @@ module Services =
 
                 return! 
                     (IssueCommand <| CreateIssue command) 
-                    |> handleCommand aggregate eventStore (fun (IssueCommand (CreateIssue x)) -> x.ProjectId) project
+                    |> handleCommand aggregate eventStore command.ProjectId project
             }  
 
 
@@ -88,7 +88,7 @@ module Services =
 
                 return! 
                     (IssueCommand <| DeleteIssue command) 
-                    |> handleCommand aggregate eventStore (fun (IssueCommand (DeleteIssue x)) -> x.ProjectId) project
+                    |> handleCommand aggregate eventStore command.ProjectId project
             }  
 
 
@@ -98,7 +98,7 @@ module Services =
 
                 return! 
                     (IssueCommand <| ChangeIssueState command) 
-                    |> handleCommand aggregate eventStore (fun (IssueCommand (ChangeIssueState x)) -> x.ProjectId) project
+                    |> handleCommand aggregate eventStore command.ProjectId project
             }  
 
 
@@ -108,7 +108,7 @@ module Services =
 
                 return! 
                     (IssueCommand <| AssignIssueToUser command) 
-                    |> handleCommand aggregate eventStore (fun (IssueCommand (AssignIssueToUser x)) -> x.ProjectId) project
+                    |> handleCommand aggregate eventStore command.ProjectId project
             }  
 
 
@@ -118,7 +118,7 @@ module Services =
 
                 return! 
                     (IssueCommand <| ChangeIssueTitle command) 
-                    |> handleCommand aggregate eventStore (fun (IssueCommand (ChangeIssueTitle x)) -> x.ProjectId) project
+                    |> handleCommand aggregate eventStore command.ProjectId project
             }  
 
 
@@ -128,7 +128,7 @@ module Services =
 
                 return! 
                     (IssueCommand <| AddIssueComment command) 
-                    |> handleCommand aggregate eventStore (fun (IssueCommand (AddIssueComment x)) -> x.ProjectId) project
+                    |> handleCommand aggregate eventStore command.ProjectId project
             }  
 
 
@@ -138,7 +138,7 @@ module Services =
 
                 return! 
                     (IssueCommand <| ChangeIssueDescription command) 
-                    |> handleCommand aggregate eventStore (fun (IssueCommand (ChangeIssueDescription x)) -> x.ProjectId) project
+                    |> handleCommand aggregate eventStore command.ProjectId project
             }  
 
 
@@ -148,7 +148,7 @@ module Services =
 
                 return! 
                     (IssueCommand <| ChangeIssueComment command) 
-                    |> handleCommand aggregate eventStore (fun (IssueCommand (ChangeIssueComment x)) -> x.ProjectId) project
+                    |> handleCommand aggregate eventStore command.ProjectId project
             }  
 
 
@@ -158,7 +158,7 @@ module Services =
 
                 return! 
                     (IssueCommand <| DeleteIssueComment command) 
-                    |> handleCommand aggregate eventStore (fun (IssueCommand (DeleteIssueComment x)) -> x.ProjectId) project
+                    |> handleCommand aggregate eventStore command.ProjectId project
             }  
 
 
@@ -168,7 +168,7 @@ module Services =
 
                 return! 
                     (IssueCommand <| AddIssueAttachment command) 
-                    |> handleCommand aggregate eventStore (fun (IssueCommand (AddIssueAttachment x)) -> x.ProjectId) project
+                    |> handleCommand aggregate eventStore command.ProjectId project
             }  
 
 
@@ -178,7 +178,7 @@ module Services =
 
                 return! 
                     (IssueCommand <| RemoveIssueAttachment command) 
-                    |> handleCommand aggregate eventStore (fun (IssueCommand (RemoveIssueAttachment x)) -> x.ProjectId) project
+                    |> handleCommand aggregate eventStore command.ProjectId project
             }  
 
 
@@ -203,24 +203,24 @@ module Services =
         }
 
 
-        let createProjectService userEventStore =
+        let createProjectService projectEventStore =
             {
-                CreateProject               = createProject userEventStore
-                DeleteProject               = deleteProject userEventStore
-                ChangeProjectState          = changeProjectState userEventStore
-                ChangeProjectTitle          = changeProjectTitle userEventStore
-                ChangeProjectDescription    = changeProjectDescription userEventStore
-                CreateIssue                 = createIssue userEventStore
-                DeleteIssue                 = deleteIssue userEventStore
-                ChangeIssueState            = changeIssueState userEventStore
-                AssignIssueToUser           = assignIssueToUser userEventStore
-                ChangeIssueTitle            = changeIssueTitle userEventStore
-                AddIssueComment             = addIssueComment userEventStore
-                ChangeIssueDescription      = changeIssueDescription userEventStore
-                ChangeIssueComment          = changeIssueComment userEventStore
-                DeleteIssueComment          = deleteIssueComment userEventStore
-                AddIssueAttachment          = addIssueAttachment userEventStore
-                RemoveIssueAttachment       = removeIssueAttachment userEventStore
+                CreateProject               = createProject projectEventStore
+                DeleteProject               = deleteProject projectEventStore
+                ChangeProjectState          = changeProjectState projectEventStore
+                ChangeProjectTitle          = changeProjectTitle projectEventStore
+                ChangeProjectDescription    = changeProjectDescription projectEventStore
+                CreateIssue                 = createIssue projectEventStore
+                DeleteIssue                 = deleteIssue projectEventStore
+                ChangeIssueState            = changeIssueState projectEventStore
+                AssignIssueToUser           = assignIssueToUser projectEventStore
+                ChangeIssueTitle            = changeIssueTitle projectEventStore
+                AddIssueComment             = addIssueComment projectEventStore
+                ChangeIssueDescription      = changeIssueDescription projectEventStore
+                ChangeIssueComment          = changeIssueComment projectEventStore
+                DeleteIssueComment          = deleteIssueComment projectEventStore
+                AddIssueAttachment          = addIssueAttachment projectEventStore
+                RemoveIssueAttachment       = removeIssueAttachment projectEventStore
             }
 
 

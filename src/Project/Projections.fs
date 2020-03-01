@@ -220,7 +220,7 @@ module ProjectList =
         
 
 
-    type ProjectListProjection(userEventStore:ProjectEventStore,
+    type ProjectListProjection(projectEventStore:ProjectEventStore,
         handleError,
         loadProjection,
         storeProjection
@@ -229,7 +229,7 @@ module ProjectList =
         let refreshProjects (state:Project list) =
             async {
                 
-                let! streams = userEventStore.ReadAllUserStreams () |> Async.AwaitTask
+                let! streams = projectEventStore.ReadAllStreams () |> Async.AwaitTask
                 match streams with
                 | Error e ->
                     e |> handleError 
@@ -241,7 +241,7 @@ module ProjectList =
                     let currentIdsAndVersion =
                         state |> List.map (fun i -> i.ProjectId,i.Version)
 
-                    let aggregatePrefix = sprintf "%s-" userEventStore.AggregateName
+                    let aggregatePrefix = sprintf "%s-" projectEventStore.AggregateName
                     
                     let newIds =
                         streams 
@@ -270,7 +270,7 @@ module ProjectList =
                         |> List.map (fun id ->
                             async {
                                 printf "."
-                                let! events = userEventStore.ReadEvents id |> Async.AwaitTask
+                                let! events = projectEventStore.ReadEvents id |> Async.AwaitTask
                                 return id,events
                             }
                         )
@@ -281,7 +281,7 @@ module ProjectList =
                         |> List.map ( fun (id,version) ->
                             async {
                                 let nextVersion = version + 1L
-                                let! events = userEventStore.ReadEventsStartSpecificVersion id nextVersion |> Async.AwaitTask
+                                let! events = projectEventStore.ReadEventsStartSpecificVersion id nextVersion |> Async.AwaitTask
                                 return id,events
                             }
                         )
